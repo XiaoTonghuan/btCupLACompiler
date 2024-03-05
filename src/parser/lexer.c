@@ -31,6 +31,9 @@ int main(int argc, const char **argv) {
      }
 
      int token;
+     lines=1;
+     pos_start=1;
+     pos_end=1;
      printf("%5s\t%10s\t%s\t%s\n", "Token", "Text", "Line", "Column (Start,End)");
      while ((token = yylex())) {
           printf("%-5d\t%10s\t%d\t(%d,%d)\n",
