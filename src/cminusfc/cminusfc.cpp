@@ -1,8 +1,8 @@
-#include "CodeGen.hpp"
-#include "DeadCode.hpp"
-#include "Mem2Reg.hpp"
+//#include "CodeGen.hpp"
+//#include "DeadCode.hpp"
+//#include "Mem2Reg.hpp"
 #include "Module.hpp"
-#include "PassManager.hpp"
+//#include "PassManager.hpp"
 #include "cminusf_builder.hpp"
 
 #include <filesystem>
@@ -40,23 +40,26 @@ struct Config {
 
 int main(int argc, char **argv) {
     Config config(argc, argv);
-
+    
     std::unique_ptr<Module> m;
     {
         auto syntax_tree = parse(config.input_file.c_str());
         auto ast = AST(syntax_tree);
         CminusfBuilder builder;
+        ASTPrinter p;
+        ast.run_visitor(p);
+        std::cout<<"print finish"<<std::endl;
         ast.run_visitor(builder);
         m = builder.getModule();
     }
 
-    PassManager PM(m.get());
+    //PassManager PM(m.get());
 
-    if (config.mem2reg) {
-        PM.add_pass<Mem2Reg>();
-        PM.add_pass<DeadCode>();
-    }
-    PM.run();
+    //if (config.mem2reg) {
+       // PM.add_pass<Mem2Reg>();
+        //PM.add_pass<DeadCode>();
+    //}
+    //PM.run();
 
     std::ofstream output_stream(config.output_file);
     if (config.emitllvm) {
@@ -65,9 +68,9 @@ int main(int argc, char **argv) {
         output_stream << "source_filename = " << abs_path << "\n\n";
         output_stream << m->print();
     } else if (config.emitasm) {
-        CodeGen codegen(m.get());
-        codegen.run();
-        output_stream << codegen.print();
+        //CodeGen codegen(m.get());
+        //codegen.run();
+        //output_stream << codegen.print();
     }
 
     return 0;
@@ -107,7 +110,7 @@ void Config::check() {
     if (input_file.empty()) {
         print_err("no input file");
     }
-    if (input_file.extension() != ".cminus") {
+    if (input_file.extension() != ".sy") {
         print_err("file format not recognized");
     }
     if (emitllvm and emitasm) {

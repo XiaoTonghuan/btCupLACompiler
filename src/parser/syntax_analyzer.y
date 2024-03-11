@@ -46,7 +46,7 @@ syntax_tree_node *node(const char *node_name, int children_num, ...);
 //非终结符
 %type <node> CompUnit Decl ConstDecl BType ConstDef ConstInitVal VarDecl
 %type <node> VarDef InitVal FuncDef  FuncFParams FuncFParam Block 
-%type <node> BlockItem Stmt Exp Cond LVal PrimaryExp Number
+%type <node> BlockItem Stmt Exp Cond LVal PrimaryExp Number Integer Float
 %type <node> UnaryExp UnaryOp FuncRParams 
 %type <node> MulExp AddExp RelExp EqExp LAndExp LOrExp ConstExp 
 %type <node> ConstExpGroup ConstInitValGroup VarDefGroup ArrayDef InitValGroup FuncFParamArray ArrayList BlockGroup
@@ -62,7 +62,21 @@ program: declaration-list {$$ = node( "program", 1, $1); gt->root = $$;}
 */
 
 
-CompUnit: FuncDef 
+CompUnit: CompUnit FuncDef
+        {
+            $$ = node( "CompUnit", 2, $1,$2);
+            if(gt->root == NULL){
+                gt->root=$$;
+            }
+        }
+        |CompUnit Decl
+        {
+            $$ = node( "CompUnit", 2, $1,$2);
+            if(gt->root == NULL){
+                gt->root=$$;
+            }
+        }
+        | Decl
         {
             $$ = node( "CompUnit", 1, $1);
             if(gt->root == NULL){
@@ -70,23 +84,10 @@ CompUnit: FuncDef
             }
             
         } 
-        | CompUnit FuncDef 
+        |FuncDef 
         {
-            $$ = node( "CompUnit", 2, $1,$2);
-            if(gt->root == NULL){
-                gt->root=$$;
-            }
-        }
-        | Decl 
-        {
+            
             $$ = node( "CompUnit", 1, $1);
-            if(gt->root == NULL){
-                gt->root=$$;
-            }
-        }
-        | CompUnit Decl
-        {
-            $$ = node( "CompUnit", 2, $1,$2);
             if(gt->root == NULL){
                 gt->root=$$;
             }
@@ -406,14 +407,26 @@ ArrayList
     };
 
 Number 
-    : INTCONST
+    : Integer
     {
         $$ = node("Number",1,$1);
     }
-    | FLOATCONST
+    | Float
     {
         $$ = node("Number",1,$1);
     };
+
+Integer
+    :INTCONST
+    {
+        $$ = node("Integer",1,$1);
+    }
+
+Float
+    :FLOATCONST
+    {
+        $$ = node("Float",1,$1);
+    }
 
 PrimaryExp 
     : LPARENTHESE Exp RPARENTHESE 

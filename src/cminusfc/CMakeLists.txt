@@ -9,9 +9,9 @@ target_link_libraries(
     IR_lib
     common
     syntax
-    codegen
+    #codegen
     stdc++fs
-    opt_lib
+    #opt_lib
 )
 
 install(

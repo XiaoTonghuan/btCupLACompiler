@@ -1,5 +1,33 @@
 #pragma once
 
+#include <vector>
+#include <string>
+
+#include "Value.hpp"
+
+class User : public Value {
+public:
+    User(Type *ty, const std::string &name="", unsigned num_ops = 0);
+    ~User() = default;
+
+    Value *get_operand(unsigned i) const;   //& start from 0
+    void set_operand(unsigned i, Value *v);   //& start from 0
+    void add_operand(Value *v);
+
+    std::vector<Value *> &get_operands();
+    unsigned get_num_operands() const;
+
+    void remove_operands(int index1, int index2);
+    void remove_use_of_ops();
+    
+private:
+    std::vector<Value *> operands_;   //& operands of this value
+    unsigned num_ops_;  
+
+};
+/*
+#pragma once
+
 #include "Value.hpp"
 
 #include <vector>
@@ -28,7 +56,7 @@ class User : public Value {
 /* For example: op = func(a, b)
  *  for a: Use(op, 0)
  *  for b: Use(op, 1)
- */
+ 
 struct Use {
     User *val_;       // used by whom
     unsigned arg_no_; // the no. of operand
@@ -39,3 +67,4 @@ struct Use {
         return val_ == other.val_ and arg_no_ == other.arg_no_;
     }
 };
+*/
