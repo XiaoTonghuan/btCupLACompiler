@@ -45,6 +45,7 @@ int main(int argc, char **argv) {
     {
         auto syntax_tree = parse(config.input_file.c_str());
         auto ast = AST(syntax_tree);
+        std::cout<<"transfer finish"<<std::endl;
         CminusfBuilder builder;
         ASTPrinter p;
         ast.run_visitor(p);

@@ -24,7 +24,7 @@ void pass_node(char *text){
 
 %%
  /* to do for students */
- /* two cases for you, pass_node will send flex's token to bison */
+ /* two cases for you, pass_node will send flex's token to bison \s {pos_start=pos_end;pos_end=pos_start+1;} */
 
 \/\*\/*([^\/]*[^\/\*]\/[\/]*)*[^\/]*\*\/ {
 				pos_start=pos_end;
@@ -51,7 +51,7 @@ void pass_node(char *text){
 \t {pos_start=pos_end;pos_end=pos_start+1;}
 " " {pos_start=pos_end;pos_end=pos_start+1;}
 \r {pos_start=pos_end;pos_end=pos_start+1;}
-\s {pos_start=pos_end;pos_end=pos_start+1;}
+
 const {pos_start=pos_end;pos_end=pos_start+5;pass_node(yytext);return CONST;}
 int {pos_start=pos_end;pos_end=pos_start+3;pass_node(yytext);return INT;}
 float {pos_start=pos_end;pos_end=pos_start+5;pass_node(yytext);return FLOAT;}
@@ -77,8 +77,8 @@ return {pos_start=pos_end;pos_end=pos_start+6;pass_node(yytext);return RETURN;}
 \, {pos_start=pos_end;pos_end=pos_start+1;pass_node(yytext);return COMMA;}
 \! {pos_start=pos_end;pos_end=pos_start+1;pass_node(yytext);return NOT;}
 \% {pos_start=pos_end;pos_end=pos_start+1;pass_node(yytext);return MOD;}
-\& {pos_start=pos_end;pos_end=pos_start+1;pass_node(yytext);return AND;}
-\| {pos_start=pos_end;pos_end=pos_start+1;pass_node(yytext);return OR;}
+"&&" {pos_start=pos_end;pos_end=pos_start+2;pass_node(yytext);return AND;}
+"||" {pos_start=pos_end;pos_end=pos_start+2;pass_node(yytext);return OR;}
 \( {pos_start=pos_end;pos_end=pos_start+1;pass_node(yytext);return LPARENTHESE;}
 \) {pos_start=pos_end;pos_end=pos_start+1;pass_node(yytext);return RPARENTHESE;}
 \[ {pos_start=pos_end;pos_end=pos_start+1;pass_node(yytext);return LBRACKET;}

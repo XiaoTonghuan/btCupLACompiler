@@ -20,6 +20,7 @@ extern int pos_start;
 
 // Global syntax tree
 syntax_tree *gt;
+int depth =0;
 
 // Error reporting
 void yyerror(const char *s);
@@ -49,7 +50,7 @@ syntax_tree_node *node(const char *node_name, int children_num, ...);
 %type <node> BlockItem Stmt Exp Cond LVal PrimaryExp Number Integer Float
 %type <node> UnaryExp UnaryOp FuncRParams 
 %type <node> MulExp AddExp RelExp EqExp LAndExp LOrExp ConstExp 
-%type <node> ConstExpGroup ConstInitValGroup VarDefGroup ArrayDef InitValGroup FuncFParamArray ArrayList BlockGroup
+%type <node> ConstExpGroup ConstInitValGroup VarDefGroup ArrayDef InitValGroup FuncFParamArray ArrayList BlockGroup ConstDeclGroup
 
 %start CompUnit
 
@@ -64,33 +65,28 @@ program: declaration-list {$$ = node( "program", 1, $1); gt->root = $$;}
 
 CompUnit: CompUnit FuncDef
         {
+            printf("%d\n",depth++);
             $$ = node( "CompUnit", 2, $1,$2);
-            if(gt->root == NULL){
-                gt->root=$$;
-            }
+            gt->root=$$;
         }
         |CompUnit Decl
         {
+            printf("%d\n",depth++);
             $$ = node( "CompUnit", 2, $1,$2);
-            if(gt->root == NULL){
-                gt->root=$$;
-            }
+            gt->root=$$;
         }
         | Decl
         {
+            printf("%d\n",depth++);
             $$ = node( "CompUnit", 1, $1);
-            if(gt->root == NULL){
-                gt->root=$$;
-            }
+            gt->root=$$;
             
         } 
         |FuncDef 
         {
-            
+            printf("%d\n",depth++);
             $$ = node( "CompUnit", 1, $1);
-            if(gt->root == NULL){
-                gt->root=$$;
-            }
+            gt->root=$$;
         } ;
 
 Decl 
@@ -108,12 +104,20 @@ ConstDecl
     {
         $$ = node("ConstDecl",4,$1,$2,$3,$4);
     }
-    |ConstDecl COMMA ConstDef
+    |CONST BType ConstDef ConstDeclGroup SEMICOLON 
     {
-        $$ = node("ConstDecl",3,$1,$2,$3);
+        $$ = node("ConstDecl",5,$1,$2,$3,$4,$5);
     } ;
 
-
+ConstDeclGroup
+    : COMMA ConstDef
+    {
+        $$ = node("ConstDeclGroup",2,$1,$2);
+    }
+    | ConstDeclGroup COMMA ConstDef
+    {
+        $$ = node("ConstDeclGroup",3,$1,$2,$3);
+    }
 
 BType
     : INT
@@ -170,7 +174,11 @@ ConstInitValGroup
     };
 
 VarDecl 
-    : BType VarDefGroup SEMICOLON 
+    : INT VarDefGroup SEMICOLON 
+    {
+        $$ = node("VarDecl",3,$1,$2,$3);
+    } 
+    |FLOAT VarDefGroup SEMICOLON 
     {
         $$ = node("VarDecl",3,$1,$2,$3);
     };

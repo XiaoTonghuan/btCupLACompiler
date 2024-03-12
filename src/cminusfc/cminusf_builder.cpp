@@ -1,7 +1,7 @@
 #include "cminusf_builder.hpp"
 #include "logging.hpp"
 
-#define ENABLE_MEMSET
+//#define ENABLE_MEMSET
 
 #define __Array_Padding_IF__(bool_exp, action)                   \
                     while(bool_exp) {                            \
@@ -493,6 +493,7 @@ void CminusfBuilder::visit(ASTVarDef &node) {
                     node.InitVal->accept(*this);
                     auto initializer = ConstantArray::get(array_type, init_val);
                     auto var = GlobalVariable::create(node.id, module.get(), array_type, false, initializer);
+                    //std::cout<<node.id<<"  "<<array_sizes.size()<<std::endl;
                     scope.push(node.id, var);
                     scope.push_size(node.id, array_sizes);
                 }
@@ -510,10 +511,10 @@ void CminusfBuilder::visit(ASTVarDef &node) {
             __RESTORE_TERMINATOR_EPILOGUE__
             if(node.InitVal) {
                 #ifdef ENABLE_MEMSET
-                    if(node.InitVal->InitVal_list.empty()&&false) { 
+                    if(node.InitVal->InitVal_list.empty()) { 
                         builder->create_memset(var);
                     } else {
-                        if(is_all_zero(*(node.InitVal.get()))&&false) {
+                        if(is_all_zero(*(node.InitVal.get()))) {
                             builder->create_memset(var);
                         } else {
                             node.InitVal->accept(*this);
@@ -928,7 +929,8 @@ void CminusfBuilder::visit(ASTLVal &node) {
             for(int i = 0; i < var_indexs.size(); i++) {
                 auto index_val = var_indexs[i];
                 Value* one_index;
-                if(var_sizes[i+1] > 1) {
+                if(var_sizes[i+1] > 1 && var_sizes.size()>i+1) {
+                    //std::cout<<"create_imul"<<std::endl;
                     one_index = builder->create_imul(CONST_INT(var_sizes[i+1]), index_val);
                 } else {
                     one_index = index_val;

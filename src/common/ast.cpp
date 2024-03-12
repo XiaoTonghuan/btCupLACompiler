@@ -63,40 +63,39 @@ ASTNode* AST::transform_node_iter(syntax_tree_node *n) {
         
         auto node = new ASTConstDeclaration();
         std::stack<syntax_tree_node *> constdecllist;
-        auto list_p = n;
-        // flatten ConstDecl
-        while(list_p->children_num <4){
-            constdecllist.push(list_p->children[2]);
-            list_p=list_p->children[0];
-        }
-        constdecllist.push(list_p->children[2]);
-        if(_STR_EQ(list_p->children[1]->children[0]->name, "int"))
-            node->type = TYPE_INT;
-        else if(_STR_EQ(list_p->children[1]->children[0]->name, "float"))
-            node->type = TYPE_FLOAT;
-        else {
-                std::cerr << "[ast]: constdecl op transform failure!"
-                          << std::endl
-                          <<list_p->children[1]->name
-                          <<std::endl;
-                std::abort();
+
+        if(n->children_num==5){
+            auto list_p = n->children[3];
+            while(list_p->children_num==3){
+                constdecllist.push(list_p->children[2]);
+                list_p=list_p->children[0];
             }
+            constdecllist.push(list_p->children[1]);
+        }
+
+        constdecllist.push(n->children[2]);
         while(!constdecllist.empty()){
-            auto head = constdecllist.top();
-            auto child_node =
-                static_cast<ASTConstDef *>(transform_node_iter(head));
-            node->ConstDef_list.push_back(std::shared_ptr<ASTConstDef>(child_node));
-            constdecllist.pop();
+                auto head = constdecllist.top();
+                auto child_node =
+                    static_cast<ASTConstDef *>(transform_node_iter(head));
+                node->ConstDef_list.push_back(std::shared_ptr<ASTConstDef>(child_node));
+                constdecllist.pop();
         }
         return node;
+        
     }else if(_STR_EQ(n->name, "VarDecl")){
             auto node = new ASTVarDeclaration();
             std::stack<syntax_tree_node *> vardecllist;
             auto list_p = n;
-            if(_STR_EQ(list_p->children[0]->children[0]->name, "int"))
+            if(_STR_EQ(list_p->children[0]->name, "int"))
                 node->type = TYPE_INT;
-            else 
+            else if(_STR_EQ(list_p->children[0]->name, "float"))
                 node->type = TYPE_FLOAT;
+            else{
+                std::cerr << "[ast]: CompUnit transform failure!"<<std::endl<<list_p->children[0]->name
+                          << std::endl;
+                std::abort();
+            }
             list_p=list_p->children[1];
             // flatten VarDecl
             while(list_p->children_num>1){
@@ -276,16 +275,18 @@ ASTNode* AST::transform_node_iter(syntax_tree_node *n) {
             return node;
         }
         if(n->children_num==2){
-            if(_STR_EQ(n->children[0]->name, "+")){
-                node->op = OP_POS;
-            }else if(_STR_EQ(n->children[0]->name, "-")){
+            if(_STR_EQ(n->children[0]->children[0]->name, "!")){
+                node->op = OP_NOT;
+            }else if(_STR_EQ(n->children[0]->children[0]->name, "-")){
                 node->op = OP_NEG;
             }else {
-                node->op = OP_NOT;
+                node->op = OP_POS;
             }
             node->UnaryExp = std::shared_ptr<ASTUnaryExp>(static_cast<ASTUnaryExp *>(transform_node_iter(n->children[1])));
             return node;
         }
+        auto callee = new ASTCallee();
+        node->Callee = std::shared_ptr<ASTCallee>(callee);
         node->Callee->id = n->children[0]->name;
         if(n->children_num==4){
             auto list_p=n->children[2];
@@ -358,8 +359,11 @@ ASTNode* AST::transform_node_iter(syntax_tree_node *n) {
             node->type = TYPE_INT;
         }else if(_STR_EQ(n->children[0]->name, "float")){
             node->type = TYPE_FLOAT;
-        }if(_STR_EQ(n->children[0]->name, "void")){
+        }else if(_STR_EQ(n->children[0]->name, "void")){
             node->type = TYPE_VOID;
+        }else {
+            std::cerr << "[ast]:funcdef transform failure!" <<n->children[0]->name<< std::endl;
+            std::abort();
         }
         node->id = n->children[1]->name;
         auto block = n->children[4];
@@ -423,7 +427,7 @@ ASTNode* AST::transform_node_iter(syntax_tree_node *n) {
             std::stack<syntax_tree_node *> funfparamlist;
 
             while(list_p->children_num==4){
-                funfparamlist.push(list_p->children[3]);
+                funfparamlist.push(list_p->children[2]);
                 list_p=list_p->children[0];
             }
             funfparamlist.push(list_p->children[1]);
@@ -490,7 +494,7 @@ ASTNode* AST::transform_node_iter(syntax_tree_node *n) {
             }
             return node;
         }else if(_STR_EQ(n->children[0]->name, ";")){
-            auto node = new ASTExp();
+            auto node = new ASTExpStmt();
             return node;
         }else {
             std::cerr << "[ast]: stmt transform failure!" << std::endl;
@@ -1350,7 +1354,7 @@ void ASTPrinter::visit(ASTUnaryExp &node)
     else
     {
         _DEBUG_PRINT_N_(depth);
-        std::cout << node.op;
+        std::cout << node.op<<std::endl;
         node.UnaryExp->accept(*this);
     }
     remove_depth();
