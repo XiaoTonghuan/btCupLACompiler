@@ -603,7 +603,8 @@ void yyerror(const char * s)
 ///
 /// This function initializes essential states before running yyparse().
 syntax_tree *parse(const char *input_path)
-{
+{ 
+    
     if (input_path != NULL) {
         if (!(yyin = fopen(input_path, "r"))) {
             fprintf(stderr, "[ERR] Open input file %s failed.\n", input_path);
@@ -612,7 +613,7 @@ syntax_tree *parse(const char *input_path)
     } else {
         yyin = stdin;
     }
-
+   
     lines = pos_start = pos_end = 1;
     gt = new_syntax_tree();
     yyrestart(yyin);

@@ -54,14 +54,6 @@ int main(int argc, char **argv) {
         m = builder.getModule();
     }
 
-    //PassManager PM(m.get());
-
-    //if (config.mem2reg) {
-       // PM.add_pass<Mem2Reg>();
-        //PM.add_pass<DeadCode>();
-    //}
-    //PM.run();
-
     std::ofstream output_stream(config.output_file);
     if (config.emitllvm) {
         auto abs_path = std::filesystem::canonical(config.input_file);
