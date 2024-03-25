@@ -2,7 +2,12 @@
 #include "../include/Hloongarch/HLLoc.hpp"
 #include "../include/Hloongarch/HLValue.hpp"
 
+#define IMM_12_MAX 0x7FF
+#define IMM_12_MIN -0x800
 
+#define LOW_12_MASK 0x00000FFF
+#define LOW_20_MASK 0x000FFFFF
+#define LOW_32_MASK 0xFFFFFFFF
 #define __L_TRIPLE_REG_OP__(op, rd, rs1, rs2)         \
         (H2L::space + (op) + H2L::space + (rd)->get_loongarch_code() + ", " + (rs1)->get_loongarch_code() + ", "+ (rs2)->get_loongarch_code() + H2L::newline) 
 
@@ -14,10 +19,10 @@ std::string addi(Reg *rd, Reg *rs, int imm) {
     std::string loongarch_code;
     Reg* tmp_s1 = new Reg(reg_s1, false);
     if(imm <= 2047 && imm >= -2048) {
-        loongarch_code += H2L::space + "addi" + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + ", " + std::to_string(imm) + H2L::newline;
+        loongarch_code += H2L::space + "addi.d" + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + ", " + std::to_string(imm) + H2L::newline;
     } else {
-        loongarch_code += H2L::space + "li" + H2L::space + tmp_s1->get_loongarch_code() + ", " + std::to_string(imm) + H2L::newline;
-        loongarch_code += __L_TRIPLE_REG_OP__("add", rd, rs, tmp_s1);
+        loongarch_code += H2L::li(tmp_s1, imm);
+        loongarch_code += __L_TRIPLE_REG_OP__("add.d", rd, rs, tmp_s1);
     }
     return loongarch_code;
 }
@@ -26,23 +31,32 @@ std::string addiw(Reg *rd, Reg *rs, int imm) {
     std::string loongarch_code;
     Reg* tmp_s1 = new Reg(reg_s1, false);
     if(imm <= 2047 && imm >= -2048) {
-        loongarch_code += H2L::space + "addiw" + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + ", " + std::to_string(imm) + H2L::newline;
+        loongarch_code += H2L::space + "addi.w" + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + ", " + std::to_string(imm) + H2L::newline;
     } else {
         loongarch_code += H2L::li(tmp_s1, imm);
-        loongarch_code += __L_TRIPLE_REG_OP__("addw", rd, rs, tmp_s1);
+        loongarch_code += __L_TRIPLE_REG_OP__("add.w", rd, rs, tmp_s1);
     }
     return loongarch_code;
 }
 
-std::string li(Reg *rd, int imm) {
+std::string li(Reg *rd, int64_t imm) {
     std::string loongarch_code;
-    loongarch_code += H2L::space + "li" + H2L::space + rd->get_loongarch_code() + ", " + std::to_string(imm) + H2L::newline;
+    auto low_32 = static_cast<int32_t>(imm & LOW_32_MASK);
+    H2L::li(rd, low_32);
+    auto high_32 = static_cast<int32_t>(imm >> 32);
+    int32_t high_32_low_20 = (high_32 << 12) >> 12; // si20
+    int32_t high_32_high_12 = high_32 >> 20;        // si12
+    loongarch_code += H2L::space + "lu32i.d" + H2L::space + rd->get_loongarch_code() + ", " + std::to_string(high_32_low_20) + H2L::newline;
+    loongarch_code += H2L::space + "lu52i.d" + H2L::space + rd->get_loongarch_code() + ", " +rd->get_loongarch_code() + ", "+ std::to_string(high_32_high_12) + H2L::newline;
     return loongarch_code;
 }
 
-std::string li(Reg *rd, uint32_t fliteral) {
+std::string li(Reg *rd, int32_t fliteral) {
     std::string loongarch_code;
-    loongarch_code += H2L::space + "li" + H2L::space + rd->get_loongarch_code() + ", " + std::to_string(fliteral) + H2L::newline;
+    int32_t high_20 = fliteral >> 12; // si20
+    uint32_t low_12 = fliteral & LOW_12_MASK;
+    loongarch_code += H2L::space + "lu12i.w" + H2L::space + rd->get_loongarch_code() + ", " + std::to_string(high_20) + H2L::newline;
+    loongarch_code += H2L::space + "ori" + H2L::space + rd->get_loongarch_code() + ", " + rd->get_loongarch_code() + ", "+ std::to_string(low_12) + H2L::newline;
     return loongarch_code;
 }
 
@@ -50,81 +64,81 @@ std::string li(Reg *rd, uint32_t fliteral) {
 //& 3 regs alu instructions
 std::string add(Reg *rd, Reg *rs1, Reg *rs2) {
     std::string loongarch_code;
-    loongarch_code += __L_TRIPLE_REG_OP__("add", rd, rs1, rs2);
+    loongarch_code += __L_TRIPLE_REG_OP__("add.d", rd, rs1, rs2);
     return loongarch_code;
 }
 
 std::string addw(Reg *rd, Reg *rs1, Reg *rs2) {
     std::string loongarch_code;
-    loongarch_code += __L_TRIPLE_REG_OP__("addw", rd, rs1, rs2);
+    loongarch_code += __L_TRIPLE_REG_OP__("add.w", rd, rs1, rs2);
     return loongarch_code;
 }
 
 std::string subw(Reg *rd, Reg *rs1, Reg *rs2) {
     std::string loongarch_code;
-    loongarch_code += __L_TRIPLE_REG_OP__("subw", rd, rs1, rs2);
+    loongarch_code += __L_TRIPLE_REG_OP__("sub.w", rd, rs1, rs2);
     return loongarch_code;
 }
 
 std::string mulw(Reg *rd, Reg *rs1, Reg *rs2) {
     std::string loongarch_code;
-    loongarch_code += __L_TRIPLE_REG_OP__("mulw", rd, rs1, rs2);
+    loongarch_code += __L_TRIPLE_REG_OP__("mul.w", rd, rs1, rs2);
     return loongarch_code;
 }
 
 std::string mul(Reg *rd, Reg *rs1, Reg *rs2) {
     std::string loongarch_code;
-    loongarch_code += __L_TRIPLE_REG_OP__("mul", rd, rs1, rs2);
+    loongarch_code += __L_TRIPLE_REG_OP__("mul.d", rd, rs1, rs2);
     return loongarch_code;
 }
 
 std::string divw(Reg *rd, Reg *rs1, Reg *rs2) {
     std::string loongarch_code;
-    loongarch_code += __L_TRIPLE_REG_OP__("divw", rd, rs1, rs2);
+    loongarch_code += __L_TRIPLE_REG_OP__("div.w", rd, rs1, rs2);
     return loongarch_code;
 }
 
 
 std::string remw(Reg *rd, Reg *rs1, Reg *rs2) {
     std::string loongarch_code;
-    loongarch_code += __L_TRIPLE_REG_OP__("remw", rd, rs1, rs2);
+    loongarch_code += __L_TRIPLE_REG_OP__("mod.w", rd, rs1, rs2);
     return loongarch_code;
 }
 
 std::string slliw(Reg *rd, Reg *rs, int imm) {
     std::string loongarch_code;
-    loongarch_code += H2L::space + "slliw" + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + ", " + std::to_string(imm) + H2L::newline;
+    loongarch_code += H2L::space + "slli.w" + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + ", " + std::to_string(imm) + H2L::newline;
     return loongarch_code;
 }
 
 
 std::string slli(Reg *rd, Reg *rs, int imm) {
     std::string code;
-    code += H2L::space + "slli" + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + ", " + std::to_string(imm) + H2L::newline;
+    code += H2L::space + "slli.d" + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + ", " + std::to_string(imm) + H2L::newline;
     return code;
 }
 
 std::string sraiw(Reg *rd, Reg *rs, int imm) {
      std::string loongarch_code;
-    loongarch_code += H2L::space + "sraiw" + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + ", " + std::to_string(imm) + H2L::newline;
+    loongarch_code += H2L::space + "srai.w" + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + ", " + std::to_string(imm) + H2L::newline;
     return loongarch_code;
 }
 
 std::string srai(Reg *rd, Reg *rs, int imm) {
      std::string code;
-    code += H2L::space + "srai" + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + ", " + std::to_string(imm) + H2L::newline;
+    code += H2L::space + "srai.d" + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + ", " + std::to_string(imm) + H2L::newline;
     return code;
 }
 
 std::string srliw(Reg *rd, Reg *rs, int imm) {
      std::string loongarch_code;
-    loongarch_code += H2L::space + "srliw" + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + ", " + std::to_string(imm) + H2L::newline;
+    loongarch_code += H2L::space + "srli.w" + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + ", " + std::to_string(imm) + H2L::newline;
     return loongarch_code;
 }
 
 std::string srli(Reg *rd, Reg *rs, int imm) {
      std::string code;
-    code += H2L::space + "srli" + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + ", " + std::to_string(imm) + H2L::newline;
+    code += H2L::space + "srli.d" + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + ", " + std::to_string(imm) + H2L::newline;
     return code;
 }
 
@@ -161,7 +175,7 @@ std::string fnegs(Reg *rd) {
 //& logical ops
 std::string andi(Reg *rd, Reg *rs, int imm) {
     std::string loongarch_code;
-    loongarch_code += H2L::space + "andi" + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + ", " + std::to_string(imm)+ H2L::newline;
+    loongarch_code += H2L::space + "andi " + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + ", " + std::to_string(imm)+ H2L::newline;
     return loongarch_code;
 }
 
@@ -174,31 +188,31 @@ std::string land(Reg *rd, Reg *rs1, Reg *rs2) {
 //& cmp ops
 std::string seqz(Reg *rd, Reg *rs) {
     std::string loongarch_code;
-    loongarch_code += H2L::space + "seqz" + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + H2L::newline;
+    loongarch_code += H2L::space + "sltui " + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + ", " + std::to_string(1)+ H2L::newline;
     return loongarch_code;
 }
 
 std::string snez(Reg *rd, Reg *rs) {
     std::string loongarch_code;
-    loongarch_code += H2L::space + "snez" + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + H2L::newline;
+    loongarch_code += __L_TRIPLE_REG_OP__("sltu", rd,new Reg(reg_zero,false), rs);
     return loongarch_code;
 }
 
 std::string feqs(Reg *rd1, Reg *rs1, Reg *rs2) {
     std::string loongarch_code;
-    loongarch_code += __L_TRIPLE_REG_OP__("feq.s", rd1, rs1, rs2);
+    loongarch_code += __L_TRIPLE_REG_OP__("fcmp.seq.s", rd1, rs1, rs2);
     return loongarch_code;
 }
 
 std::string fles(Reg *rd1, Reg *rs1, Reg *rs2) {
     std::string loongarch_code;
-    loongarch_code += __L_TRIPLE_REG_OP__("fle.s", rd1, rs1, rs2);
+    loongarch_code += __L_TRIPLE_REG_OP__("fcmp.sle.s", rd1, rs1, rs2);
     return loongarch_code;
 }
 
 std::string flts(Reg *rd1, Reg *rs1, Reg *rs2) {
     std::string loongarch_code;
-    loongarch_code += __L_TRIPLE_REG_OP__("flt.s", rd1, rs1, rs2);
+    loongarch_code += __L_TRIPLE_REG_OP__("fcmp.slt.s", rd1, rs1, rs2);
     return loongarch_code;
 }
 
@@ -231,37 +245,37 @@ std::string blt(Reg *rs1, Reg *rs2, Label *label) {
 //& mem ops
 std::string sd(Reg *src, Reg *base, int offset) {
     std::string loongarch_code;
-    loongarch_code += H2L::space + "sd" + H2L::space + src->get_loongarch_code() + ", " + std::to_string(offset) +"(" + base->get_loongarch_code() + ")" + H2L::newline;
+    loongarch_code += H2L::space + "st.d" + H2L::space + src->get_loongarch_code() + ", "  + base->get_loongarch_code() + "," +std::to_string(offset) + H2L::newline;
     return loongarch_code;
 }
 
 std::string ld(Reg *dst, Reg *base, int offset) {
     std::string loongarch_code;
-    loongarch_code += H2L::space + "ld" + H2L::space + dst->get_loongarch_code() + ", " + std::to_string(offset) +"(" + base->get_loongarch_code() + ")" + H2L::newline;
+    loongarch_code += H2L::space + "ld.d" + H2L::space + dst->get_loongarch_code() + ", " + base->get_loongarch_code() +"," + std::to_string(offset) + H2L::newline;
     return loongarch_code;
 }
 
 std::string sw(Reg *src, Reg *base, int offset) {
     std::string loongarch_code;
-    loongarch_code += H2L::space + "sw" + H2L::space + src->get_loongarch_code() + ", " + std::to_string(offset) +"(" + base->get_loongarch_code() + ")" + H2L::newline;
+    loongarch_code += H2L::space + "st.w" + H2L::space + src->get_loongarch_code() + ", "  + base->get_loongarch_code() + "," +std::to_string(offset) + H2L::newline;
     return loongarch_code;
 }
 
 std::string lw(Reg *dst, Reg *base, int offset) {
     std::string loongarch_code;
-    loongarch_code += H2L::space + "lw" + H2L::space + dst->get_loongarch_code() + ", " + std::to_string(offset) +"(" + base->get_loongarch_code() + ")" + H2L::newline;
+    loongarch_code += H2L::space + "ld.w" + H2L::space + dst->get_loongarch_code() + ", " + base->get_loongarch_code() +"," + std::to_string(offset) + H2L::newline;
     return loongarch_code;
 }
 
 std::string fsw(Reg *src, Reg *base, int offset) {
     std::string loongarch_code;
-    loongarch_code += H2L::space + "fsw" + H2L::space + src->get_loongarch_code() + ", " + std::to_string(offset) +"(" + base->get_loongarch_code() + ")" + H2L::newline;
+    loongarch_code += H2L::space + "fst.s" + H2L::space + src->get_loongarch_code() + ", " + base->get_loongarch_code() +"," + std::to_string(offset) + H2L::newline;
     return loongarch_code;
 }
 
 std::string flw(Reg *dst, Reg *base, int offset) {
     std::string loongarch_code;
-    loongarch_code += H2L::space + "flw" + H2L::space + dst->get_loongarch_code() + ", " + std::to_string(offset) +"(" + base->get_loongarch_code() + ")" + H2L::newline;
+    loongarch_code += H2L::space + "fld.w" + H2L::space + dst->get_loongarch_code() + ", " + base->get_loongarch_code() +"," + std::to_string(offset) + H2L::newline;
     return loongarch_code;
 }
 
@@ -270,41 +284,46 @@ std::string mv(Reg *dst, Reg *src) {
     std::string loongarch_code;
     if(dst->get_id() == src->get_id())
         return loongarch_code;
-    loongarch_code += H2L::space + "mv" + H2L::space + dst->get_loongarch_code() + ", " + src->get_loongarch_code() + H2L::newline;
+    loongarch_code+= H2L::addi(dst,src,0);
     return loongarch_code;
 } 
 
 std::string fmvs(Reg *dst, Reg *src) {
     std::string loongarch_code;
-    loongarch_code += H2L::space + "fmv.s" + H2L::space + dst->get_loongarch_code() + ", " + src->get_loongarch_code() + H2L::newline;
+    loongarch_code += H2L::space + "fmov.s" + H2L::space + dst->get_loongarch_code() + ", " + src->get_loongarch_code() + H2L::newline;
     return loongarch_code;
 }
 
 //& cast move
 std::string fmvsx(Reg *dst, Reg *src) {
     std::string loongarch_code;
-    loongarch_code += H2L::space + "fmv.s.x" + H2L::space + dst->get_loongarch_code() + ", " + src->get_loongarch_code() + H2L::newline;
+    loongarch_code += H2L::space + "movgr2fr.w" + H2L::space + dst->get_loongarch_code() + ", " + src->get_loongarch_code() + H2L::newline;
     return loongarch_code;
 }
 
 //& unconditional branch
 std::string j(Label *label) {
     std::string loongarch_code;
-    loongarch_code += H2L::space + "j" + H2L::space + label->get_loongarch_code() + H2L::newline;
+    loongarch_code += H2L::space + "b" + H2L::space + label->get_loongarch_code() + H2L::newline;
     return loongarch_code;
 }
 
 
 //& cast ops
+//借用fs1
 std::string fcvtsw(Reg *dst, Reg *src) {
     std::string loongarch_code;
-    loongarch_code += H2L::space + "fcvt.s.w" + H2L::space + dst->get_loongarch_code() + ", " + src->get_loongarch_code() + H2L::newline;
+    Reg* tmp_s1 = new Reg(reg_fs1, true);
+    loongarch_code += H2L::space + "movgr2fr.w" + H2L::space + tmp_s1->get_loongarch_code() + ", " + src->get_loongarch_code() + H2L::newline;
+    loongarch_code += H2L::space + "ftintrz.w.s" + H2L::space + dst->get_loongarch_code() + ", " + tmp_s1->get_loongarch_code() + H2L::newline;
     return loongarch_code;
 }
-
+//借用fs1
 std::string fcvtws(Reg *dst, Reg *src) {
     std::string loongarch_code;
-    loongarch_code += H2L::space + "fcvt.w.s" + H2L::space + dst->get_loongarch_code() + ", " + src->get_loongarch_code() + ", rtz" + H2L::newline;
+    Reg* tmp_s1 = new Reg(reg_fs1, true);
+    loongarch_code += H2L::space + "ffint.s.w" + H2L::space + tmp_s1->get_loongarch_code() + ", " + src->get_loongarch_code() + H2L::newline;
+    loongarch_code += H2L::space + "movfr2gr.s" + H2L::space + dst->get_loongarch_code() + ", " + tmp_s1->get_loongarch_code() + H2L::newline;
     return loongarch_code;
 }
 
@@ -312,28 +331,28 @@ std::string fcvtws(Reg *dst, Reg *src) {
 //& load address
 std::string la(Reg *rd, Label *label) {
     std::string loongarch_code;
-    loongarch_code += H2L::space + "la" + H2L::space + rd->get_loongarch_code() + ", " + label->get_loongarch_code() + H2L::newline;
+    loongarch_code += H2L::space + "la.local" + H2L::space + rd->get_loongarch_code() + ", " + label->get_loongarch_code() + H2L::newline;
     return loongarch_code;
 }
 
 //& sext
 std::string sextw(Reg *rd, Reg *rs) {
     std::string loongarch_code;
-    loongarch_code += H2L::space + "sext.w" + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + H2L::newline;
+    loongarch_code+=H2L::addiw(rd,rs,0);
     return loongarch_code;
 }
 
 //& ret
 std::string ret() {
     std::string loongarch_code;
-    loongarch_code += H2L::space + "ret" + H2L::newline;
+    loongarch_code += H2L::space + "jr" + H2L::space+(new Reg(reg_ra,false))->get_loongarch_code()+H2L::newline;
     return loongarch_code;
 }
 
 //& call
 std::string call(Label *label) {
     std::string loongarch_code;
-    loongarch_code += H2L::space + "call" + H2L::space + label->get_loongarch_code() + H2L::newline;
+    loongarch_code += H2L::space + "bl" + H2L::space + label->get_loongarch_code() + H2L::newline;
     return loongarch_code;
 }
 

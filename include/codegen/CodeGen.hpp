@@ -1,88 +1,145 @@
 #pragma once
 
-#include "ASMInstruction.hpp"
-#include "Module.hpp"
-#include "Register.hpp"
+#include "../lightir/Module.hpp"
+#include "../lightir/Function.hpp"
+#include "../lightir/BasicBlock.hpp"
 
-class CodeGen {
-  public:
-    explicit CodeGen(Module *module) : m(module) {}
+#include "../Hloongarch/HLFunction.hpp"
+#include "../Hloongarch/HLBlock.hpp"
+#include "../Hloongarch/HLLoc.hpp"
 
-    std::string print() const;
+#include "../codegen/Register.hpp"
 
-    void run();
 
-    template <class... Args> void append_inst(Args... arg) {
-        output.emplace_back(arg...);
+class sysY_asbuilder {
+public:
+    sysY_asbuilder(Module *m) {
+        m_ = new HLModule(m);
     }
 
-    void
-    append_inst(const char *inst, std::initializer_list<std::string> args,
-                ASMInstruction::InstType ty = ASMInstruction::Instruction) {
-        auto content = std::string(inst) + " ";
-        for (const auto &arg : args) {
-            content += arg + ", ";
-        }
-        content.pop_back();
-        content.pop_back();
-        output.emplace_back(content, ty);
-    }
+public:
+    //& main apis for loongarch code gen
+    void module_gen();
+    void globals_def_gen();
+    void function_gen();
+    void bb_gen();
+    void instr_gen(Instruction *inst);
 
-  private:
-    void allocate();
+    //& phi inst gen
+    void phi_union(Instruction *br_inst);
+    void tmp_regs_restore();
+    std::vector<std::pair<HLLoc*, HLLoc*>> idata_move(std::vector<HLLoc*>& src, std::vector<HLLoc*>&dst);
+    std::vector<std::pair<HLLoc*, HLLoc*>> fdata_move(std::vector<HLLoc*>& src, std::vector<HLLoc*>&dst);
 
-    // 向寄存器中装载数据
-    void load_to_greg(Value *, const Reg &);
-    void load_to_freg(Value *, const FReg &);
-    void load_from_stack_to_greg(Value *, const Reg &);
+    //& stack space alloc 
+    int stack_space_allocation();
 
-    // 向寄存器中加载立即数
-    void load_large_int32(int32_t, const Reg &);
-    void load_large_int64(int64_t, const Reg &);
-    void load_float_imm(float, const FReg &);
+    //& init or destruct stack space for callee 
+    void callee_stack_prologue(int stack_size);
+    void callee_stack_epilogue(int stack_size);
 
-    // 将寄存器中的数据保存回栈上
-    void store_from_greg(Value *, const Reg &);
-    void store_from_freg(Value *, const FReg &);
+    //& args move for callee or caller
+    std::vector<std::pair<HLLoc*, HLLoc*>> callee_iargs_move(Function *func);
+    std::vector<std::pair<HLLoc*, HLLoc*>> callee_fargs_move(Function *func);
+    std::vector<std::pair<HLLoc*, HLLoc*>> caller_iargs_move(CallInst *call);
+    std::vector<std::pair<HLLoc*, HLLoc*>> caller_fargs_move(CallInst *call);
 
-    void gen_prologue();
-    void gen_ret();
-    void gen_br();
-    void gen_binary();
-    void gen_float_binary();
-    void gen_alloca();
-    void gen_load();
-    void gen_store();
-    void gen_icmp();
-    void gen_fcmp();
-    void gen_zext();
-    void gen_call();
-    void gen_gep();
-    void gen_sitofp();
-    void gen_fptosi();
-    void gen_epilogue();
+    //& linearized & labeling bbs
+    void linearizing_and_labeling_bbs();
 
-    static std::string label_name(BasicBlock *bb) {
-        return "." + bb->get_parent()->get_name() + "_" + bb->get_name();
-    }
+    //& regs save and restore about func call
+    void caller_reg_store(Function* func,CallInst* call);
+    void caller_reg_restore(Function* func, CallInst* call);
 
-    struct {
-        /* 随着ir遍历设置 */
-        Function *func{nullptr};    // 当前函数
-        Instruction *inst{nullptr}; // 当前指令
-        /* 在allocate()中设置 */
-        unsigned frame_size{0}; // 当前函数的栈帧大小
-        std::unordered_map<Value *, int> offset_map{}; // 指针相对 fp 的偏移
+    //& temporary use regs for inst(all ops need to be loaded to regs for risc arch)
+    void ld_tmp_regs_for_inst(Instruction *inst);
+    void alloc_tmp_regs_for_inst(Instruction *inst);
+    void store_tmp_reg_for_inst(Instruction *inst);
 
-        void clear() {
-            func = nullptr;
-            inst = nullptr;
-            frame_size = 0;
-            offset_map.clear();
-        }
+    //& help funcs for loongarch code gen
+    Reg *get_loongarch_reg(Value* val);
 
-    } context;
+    HLModule *get_module() { return m_; }
 
-    Module *m;
-    std::list<ASMInstruction> output;
+private:
+    //& 方便代码生成 
+    
+    const int var_align = 2;
+    const int func_align = 1;
+    const int reg_size = 8;
+
+    const int arg_reg_base = 10;  //~ reg_a0 or reg_fa0
+
+    const std::vector<int> all_available_ireg_ids = {
+        reg_t0, reg_t1, reg_t2, reg_t3, reg_t4, reg_t5, reg_t6,reg_t7,reg_t8,
+        reg_s0,reg_s1,reg_s2, reg_s3, reg_s4, reg_s5, reg_s6, reg_s7, reg_s8,
+        reg_a0, reg_a1, reg_a2, reg_a3, reg_a4, reg_a5, reg_a6, reg_a7
+    };
+
+    const std::vector<int> all_available_freg_ids = {
+        reg_ft0, reg_ft1, reg_ft2, reg_ft3, reg_ft4, reg_ft5, reg_ft6, reg_ft7, reg_ft8, reg_ft9, reg_ft10, reg_ft11,reg_ft12,reg_ft13,reg_ft14,reg_ft15,
+        reg_fs0,reg_fs1,reg_fs2, reg_fs3, reg_fs4, reg_fs5, reg_fs6, reg_fs7, 
+        reg_fa0, reg_fa1, reg_fa2, reg_fa3, reg_fa4, reg_fa5, reg_fa6, reg_fa7
+    };
+
+    const std::set<int> callee_saved_iregs = {
+        reg_s0, reg_s2, reg_s3, 
+        reg_s4, reg_s5, reg_s6, reg_s7, 
+        reg_s8
+    };
+
+    const std::set<int> callee_saved_fregs = {
+        reg_fs0,
+        reg_fs2, reg_fs3, 
+        reg_fs4, reg_fs5, reg_fs6, reg_fs7, 
+    };
+
+
+private:
+    //& stack alloc 
+    std::map<Value*, RegBase*> val2stack;
+
+    //& global variable label gen for function using these global variable
+    std::map<GlobalVariable*, Label*> global_variable_labels_table;
+
+    //& function info statistic
+    std::pair<std::set<int>, std::set<int>> used_iregs_pair; 
+    std::pair<std::set<int>, std::set<int>> used_fregs_pair; 
+
+    //& active intervals of value for reg alloc
+    std::map<Value*, Interval*> ival2interval;
+    std::map<Value*, Interval*> fval2interval;
+
+    //& linearizing bbs and gen labels for bbs in function
+    std::vector<BasicBlock*> linear_bbs;
+    std::map<BasicBlock*, Label *> bb2label; 
+
+    //& regs temporary used by inst need to be saved
+    std::set<Interval*> use_tmp_regs_interval;
+    std::set<int> cur_tmp_iregs;                                //// 当前用来保存栈上值的临时寄存器
+    std::set<int> cur_tmp_fregs;                                //// 当前用来保存栈上值的临时寄存器
+    std::map<int, RegBase*> tmp_iregs_loc;                      //// 临时寄存器原值保存的地址(位于函数栈布局中临时寄存器保存区)
+    std::map<int, RegBase*> tmp_fregs_loc;                      //// 临时寄存器原值保存的地址(位于函数栈布局中临时寄存器保存区)
+    
+    std::set<RegBase*> free_locs_for_tmp_regs_saved;
+
+    std::set<Value*> to_store_ivals; 
+    std::set<Value*> to_store_fvals;
+
+    std::set<int> istore_list;                                   //// 待保存原值的临时使用的整数寄存器
+    std::set<int> fstore_list;                                   //// 待保存原值的临时使用的浮点寄存器
+
+    std::map<int, RegBase*> caller_saved_ireg_locs;             //// caller在调用函数前保存寄存器的位置
+    std::map<int, RegBase*> caller_saved_freg_locs;             //// caller在调用函数前保存寄存器的位置
+    std::vector<int> caller_save_iregs;
+    std::vector<int> caller_save_fregs;
+
+    int cur_tmp_reg_saved_stack_offset = 0;
+    int caller_saved_regs_stack_offset = 0;
+    int caller_trans_args_stack_offset = 0;
+
+private:
+    HLModule *m_;
+    HLFunction *cur_func_;
+    HLBlock *cur_bb_;
 };
