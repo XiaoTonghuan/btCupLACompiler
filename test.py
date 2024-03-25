@@ -3,9 +3,9 @@ import os
 import csv
 
 # 定义要执行的可执行文件及其参数, 测试路径
-paths = ['./tests/1-parser/input/easy'] 
+paths = ['./tests/sytest/func'] 
 executable_file = "./build/parser"
-target_end = '.cminus'
+target_end = '.sy'
 output_file_csv = './output.csv'
 
 def test_one(arguments):

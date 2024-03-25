@@ -1,5 +1,0 @@
-/*Basic num part*/
-int main(){
-    int x = 3.2e20;
-    return 0;
-}

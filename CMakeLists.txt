@@ -40,7 +40,7 @@ INCLUDE_DIRECTORIES(
     include/cminusfc
     include/common
     include/lightir
-    #include/codegen
+    include/codegen
     #include/passes/
     ${LLVM_INCLUDE_DIRS}
 )
