@@ -1,8 +1,8 @@
 //#include "CodeGen.hpp"
-//#include "DeadCode.hpp"
-//#include "Mem2Reg.hpp"
+#include "DeadCode.hpp"
+#include "Mem2Reg.hpp"
 #include "Module.hpp"
-//#include "PassManager.hpp"
+#include "PassManager.hpp"
 #include "cminusf_builder.hpp"
 
 #include <filesystem>
@@ -45,14 +45,23 @@ int main(int argc, char **argv) {
     {
         auto syntax_tree = parse(config.input_file.c_str());
         auto ast = AST(syntax_tree);
-        std::cout<<"transfer finish"<<std::endl;
         CminusfBuilder builder;
-        ASTPrinter p;
-        ast.run_visitor(p);
-        std::cout<<"print finish"<<std::endl;
         ast.run_visitor(builder);
         m = builder.getModule();
     }
+
+    m->set_print_name();
+    m->set_file_name(config.input_file.c_str());
+    PassManager PM(m.get());
+
+    if (config.mem2reg) {
+        PM.add_pass<Mem2Reg>();
+        PM.add_pass<DeadCode>();
+    }
+    PM.execute();
+
+    auto mptr = m.get();
+    mptr->set_print_name();
 
     std::ofstream output_stream(config.output_file);
     if (config.emitllvm) {
@@ -61,8 +70,9 @@ int main(int argc, char **argv) {
         output_stream << "source_filename = " << abs_path << "\n\n";
         output_stream << m->print();
     } else if (config.emitasm) {
+        
         //CodeGen codegen(m.get());
-        //codegen.run();
+       // codegen.run();
         //output_stream << codegen.print();
     }
 

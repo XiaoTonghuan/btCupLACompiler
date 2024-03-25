@@ -1,36 +1,51 @@
 #pragma once
 
-#include "Dominators.hpp"
+#include "BasicBlock.hpp"
+#include "Function.hpp"
+#include "IRBuilder.hpp"
 #include "Instruction.hpp"
-#include "Value.hpp"
+#include "Module.hpp"
+#include "PassManager.hpp"
 
-#include <map>
-#include <memory>
+class Mem2Reg : public Pass{
+public:
+	explicit Mem2Reg(Module *m, bool print_ir=false) : Pass(m, print_ir) {}
+	~Mem2Reg(){};
+	void execute() final;
+	void genPhi();
+	void insideBlockForwarding();
+	void valueDefineCounting();
+	void valueForwarding(BasicBlock *bb);
+	void removeAlloc();
+	void phiStatistic();
+    const std::string get_name() const override {return name;}
 
-class Mem2Reg : public Pass {
-  private:
-    Function *func_;
-    std::unique_ptr<Dominators> dominators_;
+	bool isLocalVarOp(Instruction *inst){
+		if (inst->get_instr_type() == Instruction::OpID::store){
+			StoreInst *sinst = static_cast<StoreInst *>(inst);
+			auto lvalue = sinst->get_lval();
+			auto glob = dynamic_cast<GlobalVariable *>(lvalue);
+			auto array_element_ptr = dynamic_cast<GetElementPtrInst *>(lvalue);
+			return !glob && !array_element_ptr;
+		}
+		else if (inst->get_instr_type() == Instruction::OpID::load){
+			LoadInst *linst = static_cast<LoadInst *>(inst);
+			auto lvalue = linst->get_lval();
+			auto glob = dynamic_cast<GlobalVariable *>(lvalue);
+			auto array_element_ptr = dynamic_cast<GetElementPtrInst *>(lvalue);
+			return !glob && !array_element_ptr;
+		}
+		else
+			return false;
+	}
+	//// void DeleteLS();
+private:
+	Function *func_;
+	IRBuilder *builder;
+	std::map<BasicBlock *, std::vector<Value *>> define_var;
+    const std::string name = "Mem2Reg";
+	std::map<Value*, Value*> lvalue_connection;
+	std::set<Value*> no_union_set;
 
-    // TODO 添加需要的变量
-
-  public:
-    Mem2Reg(Module *m) : Pass(m) {}
-    ~Mem2Reg() = default;
-
-    void run() override;
-
-    void generate_phi();
-    void rename(BasicBlock *bb);
-
-    static inline bool is_global_variable(Value *l_val) {
-        return dynamic_cast<GlobalVariable *>(l_val) != nullptr;
-    }
-    static inline bool is_gep_instr(Value *l_val) {
-        return dynamic_cast<GetElementPtrInst *>(l_val) != nullptr;
-    }
-
-    static inline bool is_valid_ptr(Value *l_val) {
-        return not is_global_variable(l_val) and not is_gep_instr(l_val);
-    }
 };
+

@@ -652,6 +652,8 @@ void CminusfBuilder::visit(ASTFuncDef &node) {
               total_size *= (*iter);
           }
           array_sizes.insert(array_sizes.begin(), total_size);
+          array_sizes.insert(array_sizes.begin(), total_size);
+          std::cout<<"FUNCARRAY size "<<total_size<<std::endl;
           scope.push_size(node.FuncFParam_list[i]->id, array_sizes);
       }
     }
