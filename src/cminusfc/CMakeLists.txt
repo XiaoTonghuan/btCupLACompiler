@@ -10,8 +10,9 @@ target_link_libraries(
     common
     syntax
     #codegen
+    Hloongarch
     stdc++fs
-    #opt_lib
+    opt_lib
 )
 
 install(

@@ -1,42 +1,246 @@
 #include "Mem2Reg.hpp"
 #include "IRBuilder.hpp"
-#include "Value.hpp"
+#include "DominateTree.hpp"
 
-#include <memory>
 
-void Mem2Reg::run() {
-    // 创建支配树分析 Pass 的实例
-    dominators_ = std::make_unique<Dominators>(m_);
-    // 建立支配树
-    dominators_->run();
-    // 以函数为单元遍历实现 Mem2Reg 算法
-    for (auto &f : m_->get_functions()) {
-        if (f.is_declaration())
-            continue;
-        func_ = &f;
-        if (func_->get_basic_blocks().size() >= 1) {
-            // 对应伪代码中 phi 指令插入的阶段
-            generate_phi();
-            // 对应伪代码中重命名阶段
-            rename(func_->get_entry_block());
-        }
-        // 后续 DeadCode 将移除冗余的局部变量的分配空间
+//! 不允许出现未定值的局部变量
+void Mem2Reg::execute() {
+    auto dom_tree = DominateTree(m_);
+    dom_tree.execute();
+    for(auto fun: m_->get_functions()){
+        if(fun->get_basic_blocks().empty())continue;
+        func_ = fun;
+        lvalue_connection.clear();
+        no_union_set.clear();
+        insideBlockForwarding();
+        genPhi();
+        m_->set_print_name();
+        valueDefineCounting();
+        valueForwarding(func_->get_entry_block());
+        removeAlloc();
     }
 }
 
-void Mem2Reg::generate_phi() {
-    // TODO
-    // 步骤一：找到活跃在多个 block 的全局名字集合，以及它们所属的 bb 块
-    // 步骤二：从支配树获取支配边界信息，并在对应位置插入 phi 指令
+void Mem2Reg::insideBlockForwarding() {
+    for(auto bb: func_->get_basic_blocks()){
+        std::map<Value *, Instruction *> defined_list;
+        std::map<Instruction *, Value *> forward_list;
+        std::map<Value *, Value *> new_value;
+        std::set<Instruction *> delete_list;
+        for(auto inst: bb->get_instructions()){
+            if(!isLocalVarOp(inst))continue;
+            if(inst->get_instr_type() == Instruction::OpID::store){
+                Value* lvalue = static_cast<StoreInst *>(inst)->get_lval();
+                Value* rvalue = static_cast<StoreInst *>(inst)->get_rval();
+                auto load_inst = dynamic_cast<Instruction*>(rvalue);
+                if(load_inst && forward_list.find(load_inst) != forward_list.end()){
+                    rvalue = forward_list.find(load_inst)->second;
+                }
+                if(defined_list.find(lvalue) != defined_list.end()){
+                    auto pair = defined_list.find(lvalue);
+                    delete_list.insert(pair->second);
+                    pair->second = inst;
+                }
+                else{
+                    defined_list.insert({lvalue, inst});
+                }
+                if(new_value.find(lvalue) != new_value.end()){
+                    new_value.find(lvalue)->second = rvalue;
+                }
+                else{
+                    new_value.insert({lvalue, rvalue});
+                }
+            }
+            else if(inst->get_instr_type() == Instruction::OpID::load) {
+                Value* lvalue = static_cast<LoadInst *>(inst)->get_lval();
+                Value* rvalue = dynamic_cast<Value *>(inst);
+                if(defined_list.find(lvalue) == defined_list.end())continue;
+                Value* value = new_value.find(lvalue)->second;
+                forward_list.insert({inst, value});
+            }
+        }
+
+        for(auto submap: forward_list){
+            Instruction * inst = submap.first; 
+            Value * value = submap.second;
+            for(auto use: inst->get_use_list()){
+                Instruction * use_inst = dynamic_cast<Instruction *>(use.val_);
+                use_inst->set_operand(use.arg_no_, value);
+            }
+            bb->delete_instr(inst);
+        } 
+        for(auto inst:delete_list){
+            bb->delete_instr(inst);
+        }       
+    }
 }
 
-void Mem2Reg::rename(BasicBlock *bb) {
-    // TODO
-    // 步骤三：将 phi 指令作为 lval 的最新定值，lval 即是为局部变量 alloca 出的地址空间
-    // 步骤四：用 lval 最新的定值替代对应的load指令
-    // 步骤五：将 store 指令的 rval，也即被存入内存的值，作为 lval 的最新定值
-    // 步骤六：为 lval 对应的 phi 指令参数补充完整
-    // 步骤七：对 bb 在支配树上的所有后继节点，递归执行 re_name 操作
-    // 步骤八：pop出 lval 的最新定值
-    // 步骤九：清除冗余的指令
+void Mem2Reg::genPhi(){
+    std::set<Value *> globals;
+    std::map<Value *, std::set<BasicBlock *>> defined_in_block;
+    for(auto bb: func_->get_basic_blocks()){
+        for(auto inst: bb->get_instructions()){
+            if(!isLocalVarOp(inst))continue;
+            if(inst->get_instr_type() == Instruction::OpID::load){
+                Value* lvalue = static_cast<LoadInst *>(inst)->get_lval();
+                globals.insert(lvalue);
+            }
+            else if(inst->get_instr_type() == Instruction::OpID::store){
+                Value* lvalue = static_cast<StoreInst *>(inst)->get_lval();
+                if(defined_in_block.find(lvalue) != defined_in_block.end()){
+                    defined_in_block.find(lvalue)->second.insert(bb);
+                }
+                else{
+                    defined_in_block.insert({lvalue, {bb}});
+                }
+            }
+        }
+    }
+
+    std::map<BasicBlock *, std::set<Value *>> bb_phi_list;
+
+    for(auto var: globals){
+        auto define_bbs = defined_in_block.find(var)->second;
+        std::vector<BasicBlock *> queue;
+        queue.assign(define_bbs.begin(), define_bbs.end());
+        int iter_pointer = 0;
+        for(; iter_pointer < queue.size(); iter_pointer++){
+            for(auto bb_domfront: queue[iter_pointer]->get_dom_frontier()){
+                if(bb_phi_list.find(bb_domfront) != bb_phi_list.end()){
+                    auto phis = bb_phi_list.find(bb_domfront);
+                    if(phis->second.find(var) == phis->second.end()){
+                        phis->second.insert(var);
+                        auto newphi = PhiInst::create_phi(var->get_type()->get_pointer_element_type(), 
+                            bb_domfront);
+                        newphi->set_lval(var);
+                        bb_domfront->add_instr_begin(newphi);
+                        queue.push_back(bb_domfront);
+                    }
+                }
+                else{
+                    auto newphi = PhiInst::create_phi(var->get_type()->get_pointer_element_type(), 
+                            bb_domfront);
+                    newphi->set_lval(var);
+                    bb_domfront->add_instr_begin(newphi);                  
+                    queue.push_back(bb_domfront);
+                    bb_phi_list.insert({bb_domfront, {var}});
+                }
+            }
+        }
+    }
 }
+
+void Mem2Reg::valueDefineCounting(){
+    define_var = std::map<BasicBlock *, std::vector<Value*>>();
+    for(auto bb: func_->get_basic_blocks()){
+        define_var.insert({bb, {}});
+        for(auto inst: bb->get_instructions()){
+            if(inst->get_instr_type() == Instruction::OpID::phi){
+                auto lvalue = dynamic_cast<PhiInst *>(inst)->get_lval();
+                define_var.find(bb)->second.push_back(lvalue);
+            }
+            else if(inst->get_instr_type() == Instruction::OpID::store){
+                if(!isLocalVarOp(inst))continue;
+                auto lvalue = dynamic_cast<StoreInst *>(inst)->get_lval();
+                define_var.find(bb)->second.push_back(lvalue);
+            }
+        }
+    }
+}
+
+std::map<Value *, std::vector<Value *>> value_status;
+std::set<BasicBlock *> visited;
+
+void Mem2Reg::valueForwarding(BasicBlock* bb){
+    std::set<Instruction *> delete_list;
+    visited.insert(bb);
+    for(auto inst: bb->get_instructions()){
+        if(inst->get_instr_type() != Instruction::OpID::phi)break;
+        auto lvalue = dynamic_cast<PhiInst *>(inst)->get_lval();
+        auto value_list = value_status.find(lvalue);
+        if(value_list != value_status.end()){
+            value_list->second.push_back(inst);
+        }
+        else{
+            value_status.insert({lvalue, {inst}});
+        }
+    }
+
+    for(auto inst: bb->get_instructions()){
+        if(inst->get_instr_type() == Instruction::OpID::phi)continue;
+        if(!isLocalVarOp(inst))continue;
+        if(inst->get_instr_type() == Instruction::OpID::load){
+            Value* lvalue = static_cast<LoadInst *>(inst)->get_lval();
+            Value* new_value = *(value_status.find(lvalue)->second.end() - 1);
+            inst->replace_all_use_with(new_value);
+        }
+        else if(inst->get_instr_type() == Instruction::OpID::store){
+            Value* lvalue = static_cast<StoreInst *>(inst)->get_lval();
+            Value* rvalue = static_cast<StoreInst *>(inst)->get_rval();
+            if(value_status.find(lvalue) != value_status.end()){
+                value_status.find(lvalue)->second.push_back(rvalue);
+            }
+            else{
+                value_status.insert({lvalue, {rvalue}});
+            }
+        }
+        delete_list.insert(inst);
+    }
+
+    for(auto succbb: bb->get_succ_basic_blocks()){
+        for(auto inst: succbb->get_instructions()){
+            if(inst->get_instr_type() == Instruction::OpID::phi){
+                auto phi = dynamic_cast<PhiInst *>(inst);
+                auto lvalue = phi->get_lval();
+                if(value_status.find(lvalue) != value_status.end()){
+                    if(value_status.find(lvalue)->second.size() > 0){
+                        Value * new_value = *(value_status.find(lvalue)->second.end() - 1);
+                        phi->add_phi_pair_operand(new_value, bb);
+                    }
+                    else{
+                        ////std::cout << "undefined value used: " << lvalue->get_name() << "\n";
+                        //// exit(-1);
+                    }
+                }
+                else{
+                    ////std::cout << "undefined value used: " << lvalue->get_name() << "\n";
+                    //// exit(-1);
+                }
+            }
+        }
+    }
+
+    for(auto succbb: bb->get_succ_basic_blocks()){
+        if(visited.find(succbb)!=visited.end())continue;
+        valueForwarding(succbb);
+    }
+
+    //// for(auto inst: bb->get_instructions()){
+        auto var_set = define_var.find(bb)->second;
+        for(auto var: var_set){
+            if(value_status.find(var) == value_status.end())continue;
+            if(value_status.find(var)->second.size() == 0)continue;
+            value_status.find(var)->second.pop_back();
+        }
+    //// }
+
+    for(auto inst: delete_list){
+        bb->delete_instr(inst);
+    }
+} 
+
+void Mem2Reg::removeAlloc(){
+    for(auto bb: func_->get_basic_blocks()){
+        std::set<Instruction *> delete_list;
+        for(auto inst: bb->get_instructions()){
+            if(inst->get_instr_type() != Instruction::OpID::alloca)continue;
+            auto alloc_inst = dynamic_cast<AllocaInst *>(inst);
+            if(alloc_inst->get_alloca_type()->is_integer_type() || alloc_inst->get_alloca_type()->is_float_type() ||
+               alloc_inst->get_alloca_type()->is_pointer_type()) delete_list.insert(inst);
+        }
+        for(auto inst: delete_list){
+            bb->delete_instr(inst);
+        }
+    }
+}
+

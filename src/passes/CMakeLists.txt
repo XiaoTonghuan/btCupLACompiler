@@ -1,7 +1,8 @@
 add_library(
     opt_lib STATIC
-    Dominators.cpp
+    DominateTree.cpp
     Mem2Reg.cpp
     FuncInfo.cpp
     DeadCode.cpp
+    Pass.cpp
 )

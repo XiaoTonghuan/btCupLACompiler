@@ -65,26 +65,26 @@ program: declaration-list {$$ = node( "program", 1, $1); gt->root = $$;}
 
 CompUnit: CompUnit FuncDef
         {
-            printf("%d\n",depth++);
+            //printf("%d\n",depth++);
             $$ = node( "CompUnit", 2, $1,$2);
             gt->root=$$;
         }
         |CompUnit Decl
         {
-            printf("%d\n",depth++);
+            //printf("%d\n",depth++);
             $$ = node( "CompUnit", 2, $1,$2);
             gt->root=$$;
         }
         | Decl
         {
-            printf("%d\n",depth++);
+            //printf("%d\n",depth++);
             $$ = node( "CompUnit", 1, $1);
             gt->root=$$;
             
         } 
         |FuncDef 
         {
-            printf("%d\n",depth++);
+            //printf("%d\n",depth++);
             $$ = node( "CompUnit", 1, $1);
             gt->root=$$;
         } ;

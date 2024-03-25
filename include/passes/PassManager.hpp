@@ -1,36 +1,31 @@
 #pragma once
 
-#include "Module.hpp"
+#include <string>
+#include <list>
 
-#include <memory>
-#include <vector>
+#include "Module.hpp"
+#include "logging.hpp"
 
 class Pass {
-  public:
-    Pass(Module *m) : m_(m) {}
-    virtual ~Pass() = default;
-    virtual void run() = 0;
-
-  protected:
+public:
+    explicit Pass(Module *m, bool print_ir) : m_(m), print_ir(print_ir) {}
+    virtual void execute() = 0;
+    virtual const std::string get_name() const = 0;
+public:
+    bool print_ir;
+protected:
     Module *m_;
 };
 
 class PassManager {
-  public:
-    PassManager(Module *m) : m_(m) {}
+public:
+    explicit PassManager(Module *m) :m_(m) { pass_list_ = std::list<Pass*> (); }
+    
+    template <typename PassTy> 
+    void add_pass(bool print_ir=false) { pass_list_.push_back(new PassTy(m_, print_ir)); }
 
-    template <typename PassType, typename... Args>
-    void add_pass(Args &&...args) {
-        passes_.emplace_back(new PassType(m_, std::forward<Args>(args)...));
-    }
-
-    void run() {
-        for (auto &pass : passes_) {
-            pass->run();
-        }
-    }
-
-  private:
-    std::vector<std::unique_ptr<Pass>> passes_;
-    Module *m_;
+    void execute(bool print_ir = false);
+private:
+    Module* m_;
+    std::list<Pass*> pass_list_;
 };
