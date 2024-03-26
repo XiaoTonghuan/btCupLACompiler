@@ -1,4 +1,4 @@
-//#include "CodeGen.hpp"
+#include "include/codegen/CodeGen.hpp"
 #include "DeadCode.hpp"
 #include "Mem2Reg.hpp"
 #include "Module.hpp"
@@ -19,7 +19,7 @@ struct Config {
     std::filesystem::path output_file;
 
     bool emitllvm{false};
-    bool emitasm{false};
+    bool emitloongarch{false};
     bool mem2reg{false};
 
     Config(int argc, char **argv) : argc(argc), argv(argv) {
@@ -69,8 +69,13 @@ int main(int argc, char **argv) {
         output_stream << "; ModuleID = 'cminus'\n";
         output_stream << "source_filename = " << abs_path << "\n\n";
         output_stream << m->print();
-    } else if (config.emitasm) {
-        
+    } else if (config.emitloongarch) {
+        sysY_asbuilder asbuilder(mptr);
+        std::cout<<"module_gen start"<<std::endl;
+        asbuilder.module_gen();
+        std::cout<<"module_gen end"<<std::endl;
+        auto loongarch_code = asbuilder.get_module()->get_loongarch_code();
+        output_stream << loongarch_code;
         //CodeGen codegen(m.get());
        // codegen.run();
         //output_stream << codegen.print();
@@ -94,7 +99,7 @@ void Config::parse_cmd_line() {
         } else if (argv[i] == "-emit-llvm"s) {
             emitllvm = true;
         } else if (argv[i] == "-S"s) {
-            emitasm = true;
+            emitloongarch = true;
         } else if (argv[i] == "-mem2reg"s) {
             mem2reg = true;
         } else {
@@ -116,17 +121,17 @@ void Config::check() {
     if (input_file.extension() != ".sy") {
         print_err("file format not recognized");
     }
-    if (emitllvm and emitasm) {
-        print_err("emit llvm and emit asm both set");
+    if (emitllvm and emitloongarch) {
+        print_err("emit llvm and emit loongarch both set");
     }
-    if (not emitllvm and not emitasm) {
+    if (not emitllvm and not emitloongarch) {
         print_err("not supported: generate executable file directly");
     }
     if (output_file.empty()) {
         output_file = input_file.stem();
         if (emitllvm) {
             output_file.replace_extension(".ll");
-        } else if (emitasm) {
+        } else if (emitloongarch) {
             output_file.replace_extension(".s");
         }
     }

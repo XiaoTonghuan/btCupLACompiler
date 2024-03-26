@@ -9,7 +9,7 @@ target_link_libraries(
     IR_lib
     common
     syntax
-    #codegen
+    codegen
     Hloongarch
     stdc++fs
     opt_lib

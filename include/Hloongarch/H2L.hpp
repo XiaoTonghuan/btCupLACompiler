@@ -18,7 +18,7 @@ namespace H2L {
     std::string addiw(Reg *rd, Reg *rs, int imm);
 
     std::string li(Reg *rd, int imm);
-    std::string li(Reg *rd, uint32_t fliteral);
+    std::string li(Reg *rd, int32_t fliteral);
 
     //& 3 regs alu instructions
     std::string add(Reg *rd, Reg *rs1, Reg *rs2);
