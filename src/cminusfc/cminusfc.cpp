@@ -1,6 +1,29 @@
 #include "include/codegen/CodeGen.hpp"
 #include "DeadCode.hpp"
 #include "Mem2Reg.hpp"
+#include "ActiveVar.hpp"
+#include "Check.hpp"
+#include "CFGAnalyse.hpp"
+#include "ConstProp.hpp"
+#include "LIR.hpp"
+#include "DeadCodeEliWithBr.hpp"
+#include "StrengthReduction.hpp"
+#include "LoopInvariant.hpp"
+#include "AlgeSimplify.hpp"
+#include "LocalComSubExprEli.hpp"
+#include "FuncInline.hpp"
+#include "LoopExpansion.hpp"
+#include "DeadStoreEli.hpp"
+#include "TailRecursionElim.hpp"
+#include "InstructionScheduling.hpp"
+#include "LoopSearch.hpp"
+#include "LoopInfo.hpp"
+#include "LoopStrengthReduction.hpp"
+#include "RedundantInstsEli.hpp"
+#include "AgressiveConstProp.hpp"
+#include "VarLoopExpansion.hpp"
+#include "AgressiveLocalComSubExprEli.hpp"
+#include "RecSeq.hpp"
 #include "Module.hpp"
 #include "PassManager.hpp"
 #include "cminusf_builder.hpp"
@@ -55,13 +78,57 @@ int main(int argc, char **argv) {
     PassManager PM(m.get());
 
     if (config.mem2reg) {
+       /* PM.add_pass<DeadStoreEli>();
         PM.add_pass<Mem2Reg>();
-        PM.add_pass<DeadCode>();
+        PM.add_pass<ConstProp>();
+        PM.add_pass<DeadCodeEliWithBr>();
+        PM.add_pass<RecSeq>();
+        PM.add_pass<FuncInline>();
+        PM.add_pass<DeadCodeEliWithBr>();
+        PM.add_pass<AgressiveLocalComSubExprEli>();
+        PM.add_pass<LocalComSubExprEli>();
+        PM.add_pass<AlgeSimplify>();
+        PM.add_pass<LoopInvariant>();
+        PM.add_pass<DeadCodeEliWithBr>();
+        PM.add_pass<LoopInvariant>();
+        PM.add_pass<DeadCodeEliWithBr>();
+        PM.add_pass<LoopExpansion>();
+        PM.add_pass<VarLoopExpansion>();
+        PM.add_pass<DeadCodeEliWithBr>();
+        // PM.add_pass<Check>();
+
+        //& 第二轮
+        PM.add_pass<ConstProp>();
+        PM.add_pass<AlgeSimplify>();
+        PM.add_pass<DeadCodeEliWithBr>();
+        PM.add_pass<LoopInvariant>();
+        PM.add_pass<DeadCodeEliWithBr>();
+        PM.add_pass<TailRecursionElim>();
+
+        //& 第三轮
+        PM.add_pass<LIR>();
+        // PM.add_pass<LoopStrengthReduction>();
+        PM.add_pass<LocalComSubExprEli>();
+        PM.add_pass<ConstProp>();
+        PM.add_pass<DeadStoreEli>();
+        PM.add_pass<DeadCodeEliWithBr>();
+        PM.add_pass<StrengthReduction>();
+        PM.add_pass<LocalComSubExprEli>();
+        PM.add_pass<DeadCodeEliWithBr>();
+        PM.add_pass<RedundantInstsEli>();
+        PM.add_pass<AgressiveConstProp>();
+        // PM.add_pass<InstructionScheduling>();
+        PM.add_pass<ActiveVar>();
+        PM.add_pass<CFGAnalyse>();*/
+        
+        PM.add_pass<Mem2Reg>();
+        PM.add_pass<LIR>();
+        PM.add_pass<LocalComSubExprEli>();
+        PM.add_pass<CFGAnalyse>();
+        PM.add_pass<ActiveVar>();
     }
     PM.execute();
 
-    auto mptr = m.get();
-    mptr->set_print_name();
 
     std::ofstream output_stream(config.output_file);
     if (config.emitllvm) {
@@ -70,15 +137,16 @@ int main(int argc, char **argv) {
         output_stream << "source_filename = " << abs_path << "\n\n";
         output_stream << m->print();
     } else if (config.emitloongarch) {
+        auto mptr = m.get();
+        mptr->set_print_name();
         sysY_asbuilder asbuilder(mptr);
-        std::cout<<"module_gen start"<<std::endl;
         asbuilder.module_gen();
-        std::cout<<"module_gen end"<<std::endl;
         auto loongarch_code = asbuilder.get_module()->get_loongarch_code();
         output_stream << loongarch_code;
         //CodeGen codegen(m.get());
        // codegen.run();
         //output_stream << codegen.print();
+        std::cout<<asbuilder.get_module()->print();
     }
 
     return 0;

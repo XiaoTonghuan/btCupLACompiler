@@ -644,7 +644,7 @@ void RegAlloc::add_reg_to_pool(Interval* interval){
         freg2ActInter[reg_id].erase(interval);
     }
     else{
-        if(reg_id < 5||reg_id > 31){
+        if(reg_id < 4||reg_id > 31){
             return;
         }
         if(ireg2ActInter[reg_id].size()<=1){

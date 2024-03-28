@@ -17,7 +17,7 @@ namespace H2L {
 //& 外部调用保证rs不可能为s1号寄存器
 std::string addi(Reg *rd, Reg *rs, int imm) {
     std::string loongarch_code;
-    Reg* tmp_s1 = new Reg(reg_s1, false);
+    Reg* tmp_s1 = new Reg(reg_x, false);
     if(imm <= 2047 && imm >= -2048) {
         loongarch_code += H2L::space + "addi.d" + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + ", " + std::to_string(imm) + H2L::newline;
     } else {
@@ -29,7 +29,7 @@ std::string addi(Reg *rd, Reg *rs, int imm) {
 
 std::string addiw(Reg *rd, Reg *rs, int imm) {
     std::string loongarch_code;
-    Reg* tmp_s1 = new Reg(reg_s1, false);
+    Reg* tmp_s1 = new Reg(reg_x, false);
     if(imm <= 2047 && imm >= -2048) {
         loongarch_code += H2L::space + "addi.w" + H2L::space + rd->get_loongarch_code() + ", " + rs->get_loongarch_code() + ", " + std::to_string(imm) + H2L::newline;
     } else {
@@ -310,7 +310,7 @@ std::string j(Label *label) {
 
 
 //& cast ops
-//借用fs1
+//借用fs1,外部确保不会使用fs1
 std::string fcvtsw(Reg *dst, Reg *src) {
     std::string loongarch_code;
     Reg* tmp_s1 = new Reg(reg_fs1, true);
