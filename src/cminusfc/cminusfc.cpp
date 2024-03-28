@@ -146,6 +146,7 @@ int main(int argc, char **argv) {
         //CodeGen codegen(m.get());
        // codegen.run();
         //output_stream << codegen.print();
+        std::cout<<asbuilder.get_module()->print();
     }
 
     return 0;

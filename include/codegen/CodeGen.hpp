@@ -68,7 +68,8 @@ private:
     const int func_align = 1;
     const int reg_size = 8;
 
-    const int arg_reg_base = 10;  //~ reg_a0 or reg_fa0
+    const int iarg_reg_base = 4;  // reg_a0 or reg_fa0
+    const int farg_reg_base = 0;
 
     const std::vector<int> all_available_ireg_ids = {
         reg_t0, reg_t1, reg_t2, reg_t3, reg_t4, reg_t5, reg_t6,reg_t7,reg_t8,

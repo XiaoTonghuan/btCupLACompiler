@@ -365,7 +365,7 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::callee_iargs_move(Functio
                 if(is_args_moved[i]) {
                     for(auto riter = iargs_dependency_chain.rbegin(); riter != iargs_dependency_chain.rend(); riter++) {
                         auto iarg = riter->first;
-                        to_move_locs.push_back(std::make_pair(new RegLoc(ival2interval[iarg]->reg_id, false), new RegLoc(arg_reg_base + riter->second, false)));
+                        to_move_locs.push_back(std::make_pair(new RegLoc(ival2interval[iarg]->reg_id, false), new RegLoc(iarg_reg_base + riter->second, false)));
                         is_args_moved[riter->second] = true;
                     }
                     iargs_dependency_chain.clear();
@@ -373,27 +373,27 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::callee_iargs_move(Functio
                 } else if(target_reg_id < 0) {
                     int base_reg_id = val2stack[iargs_vector[i]]->get_reg_id();
                     int offset = val2stack[iargs_vector[i]]->get_offset();
-                    to_move_locs.push_back(std::make_pair(new RegBase(base_reg_id, offset), new RegLoc(arg_reg_base + i, false)));
+                    to_move_locs.push_back(std::make_pair(new RegBase(base_reg_id, offset), new RegLoc(iarg_reg_base + i, false)));
                     is_args_moved[i] = true;
                     if(!iargs_dependency_chain.empty()) {
                         for(auto riter = iargs_dependency_chain.rbegin(); riter != iargs_dependency_chain.rend(); riter++) {
                             auto iarg = riter->first;
-                            to_move_locs.push_back(std::make_pair(new RegLoc(ival2interval[iarg]->reg_id, false), new RegLoc(arg_reg_base + riter->second, false)));
+                            to_move_locs.push_back(std::make_pair(new RegLoc(ival2interval[iarg]->reg_id, false), new RegLoc(iarg_reg_base + riter->second, false)));
                             is_args_moved[riter->second] = true;
                         }
                         iargs_dependency_chain.clear();
                     } 
                     break;
-                } else if(target_reg_id - arg_reg_base == i) {
+                } else if(target_reg_id - iarg_reg_base == i) {
                     is_args_moved[i] = true;
                     break;
-                } else if(target_reg_id - arg_reg_base >= first_iargs_num || target_reg_id - arg_reg_base < 0) {
-                    to_move_locs.push_back(std::make_pair(new RegLoc(target_reg_id, false), new RegLoc(arg_reg_base + i, false)));
+                } else if(target_reg_id - iarg_reg_base >= first_iargs_num || target_reg_id - iarg_reg_base < 0) {
+                    to_move_locs.push_back(std::make_pair(new RegLoc(target_reg_id, false), new RegLoc(iarg_reg_base + i, false)));
                     is_args_moved[i] = true;
                     if(!iargs_dependency_chain.empty()) {
                         for(auto riter = iargs_dependency_chain.rbegin(); riter != iargs_dependency_chain.rend(); riter++) {
                             auto iarg = riter->first;
-                            to_move_locs.push_back(std::make_pair(new RegLoc(ival2interval[iarg]->reg_id, false), new RegLoc(arg_reg_base + riter->second, false)));
+                            to_move_locs.push_back(std::make_pair(new RegLoc(ival2interval[iarg]->reg_id, false), new RegLoc(iarg_reg_base + riter->second, false)));
                             is_args_moved[riter->second] = true;
                         }
                         iargs_dependency_chain.clear();
@@ -401,15 +401,15 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::callee_iargs_move(Functio
                     break;
                 } else {
                     iargs_dependency_chain.push_back({iargs_vector[i], i});
-                    i = target_reg_id - arg_reg_base;
+                    i = target_reg_id - iarg_reg_base;
                     if(iargs_vector[i] == iargs_dependency_chain.begin()->first) {
                         //& found loop
-                        to_move_locs.push_back(std::make_pair(new RegLoc(reg_x, false), new RegLoc(arg_reg_base + iargs_dependency_chain.rbegin()->second, false)));
+                        to_move_locs.push_back(std::make_pair(new RegLoc(reg_x, false), new RegLoc(iarg_reg_base + iargs_dependency_chain.rbegin()->second, false)));
                         for(auto riter = iargs_dependency_chain.rbegin(); riter != iargs_dependency_chain.rend(); riter++) {
                             if(riter->first == iargs_dependency_chain.rbegin()->first)
                                 continue;
                             auto iarg = riter->first;
-                            to_move_locs.push_back(std::make_pair(new RegLoc(ival2interval[iarg]->reg_id, false), new RegLoc(arg_reg_base + riter->second, false)));
+                            to_move_locs.push_back(std::make_pair(new RegLoc(ival2interval[iarg]->reg_id, false), new RegLoc(iarg_reg_base + riter->second, false)));
                             is_args_moved[riter->second] = true;
                         }
                         to_move_locs.push_back(std::make_pair(new RegLoc(ival2interval[iargs_dependency_chain.rbegin()->first]->reg_id, false), new RegLoc(reg_x, false)));
@@ -423,7 +423,7 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::callee_iargs_move(Functio
                 if(!iargs_dependency_chain.empty()) {
                     for(auto riter = iargs_dependency_chain.rbegin(); riter != iargs_dependency_chain.rend(); riter++) {
                         auto iarg = riter->first;
-                        to_move_locs.push_back(std::make_pair(new RegLoc(ival2interval[iarg]->reg_id, false), new RegLoc(arg_reg_base + riter->second, false)));
+                        to_move_locs.push_back(std::make_pair(new RegLoc(ival2interval[iarg]->reg_id, false), new RegLoc(iarg_reg_base + riter->second, false)));
                         is_args_moved[riter->second] = true;
                     }
                     iargs_dependency_chain.clear();
@@ -484,7 +484,7 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::callee_fargs_move(Functio
                 if(is_args_moved[i]) {
                     for(auto riter = fargs_dependency_chain.rbegin(); riter != fargs_dependency_chain.rend(); riter++) {
                         auto farg = riter->first;
-                        to_move_locs.push_back(std::make_pair(new RegLoc(fval2interval[farg]->reg_id, true), new RegLoc(arg_reg_base + riter->second, true)));
+                        to_move_locs.push_back(std::make_pair(new RegLoc(fval2interval[farg]->reg_id, true), new RegLoc(farg_reg_base + riter->second, true)));
                         is_args_moved[riter->second] = true;
                     }
                     fargs_dependency_chain.clear();
@@ -492,28 +492,28 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::callee_fargs_move(Functio
                 } else if(target_reg_id < 0) {
                     int base_reg_id = val2stack[fargs_vector[i]]->get_reg_id();
                     int offset = val2stack[fargs_vector[i]]->get_offset();
-                    to_move_locs.push_back(std::make_pair(new RegBase(base_reg_id, offset), new RegLoc(arg_reg_base + i, true)));
+                    to_move_locs.push_back(std::make_pair(new RegBase(base_reg_id, offset), new RegLoc(farg_reg_base + i, true)));
                     is_args_moved[i] = true;
                     if(!fargs_dependency_chain.empty()) {
                         for(auto riter = fargs_dependency_chain.rbegin(); riter != fargs_dependency_chain.rend(); riter++) {
                             auto farg = riter->first;
-                            to_move_locs.push_back(std::make_pair(new RegLoc(fval2interval[farg]->reg_id, true), new RegLoc(arg_reg_base + riter->second, true)));
+                            to_move_locs.push_back(std::make_pair(new RegLoc(fval2interval[farg]->reg_id, true), new RegLoc(farg_reg_base + riter->second, true)));
                             is_args_moved[riter->second] = true;
                         }
                         fargs_dependency_chain.clear();
                     } 
                     break;
-                } else if(target_reg_id - arg_reg_base == i) {
+                } else if(target_reg_id - farg_reg_base == i) {
                     is_args_moved[i] = true;
                     break;
-                } else if(target_reg_id - arg_reg_base >= first_fargs_num || target_reg_id - arg_reg_base < 0) {
-                    to_move_locs.push_back(std::make_pair(new RegLoc(target_reg_id, true), new RegLoc(arg_reg_base + i, true)));
+                } else if(target_reg_id - farg_reg_base >= first_fargs_num || target_reg_id - farg_reg_base < 0) {
+                    to_move_locs.push_back(std::make_pair(new RegLoc(target_reg_id, true), new RegLoc(farg_reg_base + i, true)));
                     is_args_moved[i] = true;
                     int target = i;
                     if(!fargs_dependency_chain.empty()) {
                         for(auto riter = fargs_dependency_chain.rbegin(); riter != fargs_dependency_chain.rend(); riter++) {
                             auto farg = riter->first;
-                            to_move_locs.push_back(std::make_pair(new RegLoc(fval2interval[farg]->reg_id, true), new RegLoc(arg_reg_base + riter->second, true)));
+                            to_move_locs.push_back(std::make_pair(new RegLoc(fval2interval[farg]->reg_id, true), new RegLoc(farg_reg_base + riter->second, true)));
                             target = riter->second;
                             is_args_moved[riter->second] = true;
                         }
@@ -522,15 +522,15 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::callee_fargs_move(Functio
                     break;
                 } else {
                     fargs_dependency_chain.push_back({fargs_vector[i], i});
-                    i = target_reg_id - arg_reg_base;
+                    i = target_reg_id - farg_reg_base;
                     if(fargs_vector[i] == fargs_dependency_chain.begin()->first) {
                         //& found loop    
-                        to_move_locs.push_back(std::make_pair(new RegLoc(reg_fs1, true), new RegLoc(arg_reg_base + fargs_dependency_chain.rbegin()->second, true)));
+                        to_move_locs.push_back(std::make_pair(new RegLoc(reg_fs1, true), new RegLoc(farg_reg_base + fargs_dependency_chain.rbegin()->second, true)));
                         for(auto riter = fargs_dependency_chain.rbegin(); riter != fargs_dependency_chain.rend(); riter++) {
                             if(riter->first == fargs_dependency_chain.rbegin()->first)
                                 continue;
                             auto farg = riter->first;
-                            to_move_locs.push_back(std::make_pair(new RegLoc(fval2interval[farg]->reg_id, true), new RegLoc(arg_reg_base + riter->second, true)));
+                            to_move_locs.push_back(std::make_pair(new RegLoc(fval2interval[farg]->reg_id, true), new RegLoc(farg_reg_base + riter->second, true)));
                             is_args_moved[riter->second] = true;
                         }
                         to_move_locs.push_back(std::make_pair(new RegLoc(fval2interval[fargs_dependency_chain.rbegin()->first]->reg_id, true), new RegLoc(reg_fs1, true)));
@@ -544,7 +544,7 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::callee_fargs_move(Functio
                 if(!fargs_dependency_chain.empty()) {
                     for(auto riter = fargs_dependency_chain.rbegin(); riter != fargs_dependency_chain.rend(); riter++) {
                         auto farg = riter->first;
-                        to_move_locs.push_back(std::make_pair(new RegLoc(fval2interval[farg]->reg_id, true), new RegLoc(arg_reg_base + riter->second, true)));
+                        to_move_locs.push_back(std::make_pair(new RegLoc(fval2interval[farg]->reg_id, true), new RegLoc(farg_reg_base + riter->second, true)));
                         is_args_moved[riter->second] = true;
                     }
                     fargs_dependency_chain.clear();
@@ -1108,14 +1108,14 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::caller_iargs_move(CallIns
         if(i == is_args_moved.size()) 
             break;
         while(true) {
-            if(reg2iargnos.find(i + arg_reg_base) != reg2iargnos.end()) {
-                if(reg2iargnos[i+arg_reg_base].find(i) != reg2iargnos[i+arg_reg_base].end()) {
-                    if(reg2iargnos[i+arg_reg_base].size() == 1) {
+            if(reg2iargnos.find(i + iarg_reg_base) != reg2iargnos.end()) {
+                if(reg2iargnos[i+iarg_reg_base].find(i) != reg2iargnos[i+iarg_reg_base].end()) {
+                    if(reg2iargnos[i+iarg_reg_base].size() == 1) {
                         is_args_moved[i] = true;
-                        reg2iargnos[i+arg_reg_base].erase(i);
-                        reg2iargnos.erase(i+arg_reg_base);
+                        reg2iargnos[i+iarg_reg_base].erase(i);
+                        reg2iargnos.erase(i+iarg_reg_base);
                     } else {
-                        for(auto tmp_argno: reg2iargnos[i+arg_reg_base]) {
+                        for(auto tmp_argno: reg2iargnos[i+iarg_reg_base]) {
                             if(tmp_argno != i) {
                                 i = tmp_argno;
                                 break;
@@ -1126,13 +1126,13 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::caller_iargs_move(CallIns
                     }
                 } else {
                     reg_dependency_chain.push_back({iargs[i], i});
-                    i = *reg2iargnos[i+arg_reg_base].begin();
+                    i = *reg2iargnos[i+iarg_reg_base].begin();
                     if(i == reg_dependency_chain.begin()->second) {
                         //& found loop
                         //& check if or not no branches (a single circle)
                         bool is_single_circle = true; 
                         for(auto iter = reg_dependency_chain.begin(); iter != reg_dependency_chain.end(); iter++) {
-                            if(reg2iargnos[iter->second + arg_reg_base].size() > 1) {
+                            if(reg2iargnos[iter->second + iarg_reg_base].size() > 1) {
                                 int next_argno;
                                 if(iter->first == reg_dependency_chain.rbegin()->first) {
                                     next_argno = reg_dependency_chain.begin()->second;
@@ -1140,7 +1140,7 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::caller_iargs_move(CallIns
                                     next_argno = (++iter)->second;
                                     iter--;
                                 }
-                                for(auto tmp_argno: reg2iargnos[iter->second + arg_reg_base]) {
+                                for(auto tmp_argno: reg2iargnos[iter->second + iarg_reg_base]) {
                                     if(tmp_argno != next_argno) {
                                         i = tmp_argno;
                                         break;
@@ -1160,13 +1160,13 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::caller_iargs_move(CallIns
                                     continue;
                                 int arg_no = riter->second;
                                 int src_reg_id = ival2interval[riter->first]->reg_id;
-                                to_move_locs.push_back(std::make_pair(new RegLoc(arg_no+arg_reg_base, false), new RegLoc(src_reg_id, false)));
+                                to_move_locs.push_back(std::make_pair(new RegLoc(arg_no+iarg_reg_base, false), new RegLoc(src_reg_id, false)));
                                 is_args_moved[arg_no] = true;        
                                 reg2iargnos[src_reg_id].erase(arg_no);
                                 if(reg2iargnos[src_reg_id].empty())
                                     reg2iargnos.erase(src_reg_id);
                             }
-                            to_move_locs.push_back(std::make_pair(new RegLoc(reg_dependency_chain.rbegin()->second + arg_reg_base, false), new RegLoc(reg_x, false)));
+                            to_move_locs.push_back(std::make_pair(new RegLoc(reg_dependency_chain.rbegin()->second + iarg_reg_base, false), new RegLoc(reg_x, false)));
                             int arg_no = reg_dependency_chain.rbegin()->second;
                             int src_reg_id = ival2interval[reg_dependency_chain.rbegin()->first]->reg_id;
                             is_args_moved[arg_no] = true; 
@@ -1180,18 +1180,18 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::caller_iargs_move(CallIns
                 }
             } else {
                 if(ival2interval.find(iargs[i]) == ival2interval.end()) {
-                    to_move_locs.push_back(std::make_pair(new RegLoc(i+arg_reg_base, false), new ConstPool(dynamic_cast<ConstantInt*>(iargs[i])->get_value())));
+                    to_move_locs.push_back(std::make_pair(new RegLoc(i+iarg_reg_base, false), new ConstPool(dynamic_cast<ConstantInt*>(iargs[i])->get_value())));
                     is_args_moved[i] = true;
                     break;
                 } else {
                     int src_reg_id = ival2interval[iargs[i]]->reg_id;
                     if(src_reg_id < 0) {
                         RegBase *regbase = val2stack[iargs[i]];
-                        to_move_locs.push_back(std::make_pair(new RegLoc(i+arg_reg_base, false), regbase));
+                        to_move_locs.push_back(std::make_pair(new RegLoc(i+iarg_reg_base, false), regbase));
                         is_args_moved[i] = true;
                         break;
                     } else {
-                        to_move_locs.push_back(std::make_pair(new RegLoc(i+arg_reg_base, false), new RegLoc(src_reg_id, false)));
+                        to_move_locs.push_back(std::make_pair(new RegLoc(i+iarg_reg_base, false), new RegLoc(src_reg_id, false)));
                         is_args_moved[i] = true;
                         reg2iargnos[src_reg_id].erase(i);
                         if(reg2iargnos[src_reg_id].empty())
@@ -1201,20 +1201,20 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::caller_iargs_move(CallIns
                                 auto iarg = riter->first;
                                 auto iargno = riter->second;
                                 if(ival2interval.find(iargs[iargno]) == ival2interval.end()) {
-                                    to_move_locs.push_back(std::make_pair(new RegLoc(iargno+arg_reg_base, false), new ConstPool(dynamic_cast<ConstantInt*>(iarg)->get_value())));
+                                    to_move_locs.push_back(std::make_pair(new RegLoc(iargno+iarg_reg_base, false), new ConstPool(dynamic_cast<ConstantInt*>(iarg)->get_value())));
                                     is_args_moved[iargno] = true;
                                     break;
                                 } else {
                                     int src_reg_id = ival2interval[iarg]->reg_id;
                                     if(src_reg_id < 0) {
                                         RegBase *regbase = val2stack[iarg];
-                                        to_move_locs.push_back(std::make_pair(new RegLoc(iargno+arg_reg_base, false), regbase));
+                                        to_move_locs.push_back(std::make_pair(new RegLoc(iargno+iarg_reg_base, false), regbase));
                                         is_args_moved[iargno] = true;
                                         break;
                                     } else {
-                                        if(reg2iargnos.find(iargno + arg_reg_base) != reg2iargnos.end()) 
+                                        if(reg2iargnos.find(iargno + iarg_reg_base) != reg2iargnos.end()) 
                                             break;
-                                        to_move_locs.push_back(std::make_pair(new RegLoc(iargno+arg_reg_base, false), new RegLoc(src_reg_id, false)));
+                                        to_move_locs.push_back(std::make_pair(new RegLoc(iargno+iarg_reg_base, false), new RegLoc(src_reg_id, false)));
                                         is_args_moved[iargno] = true;
                                         reg2iargnos[src_reg_id].erase(iargno);
                                         if(reg2iargnos[src_reg_id].empty())
@@ -1303,14 +1303,14 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::caller_fargs_move(CallIns
         if(i == is_args_moved.size()) 
             break;
         while(true) {
-            if(reg2fargnos.find(i + arg_reg_base) != reg2fargnos.end()) {
-                if(reg2fargnos[i+arg_reg_base].find(i) != reg2fargnos[i+arg_reg_base].end()) {
-                    if(reg2fargnos[i+arg_reg_base].size() == 1) {
+            if(reg2fargnos.find(i + farg_reg_base) != reg2fargnos.end()) {
+                if(reg2fargnos[i+farg_reg_base].find(i) != reg2fargnos[i+farg_reg_base].end()) {
+                    if(reg2fargnos[i+farg_reg_base].size() == 1) {
                         is_args_moved[i] = true;
-                        reg2fargnos[i+arg_reg_base].erase(i);
-                        reg2fargnos.erase(i+arg_reg_base);
+                        reg2fargnos[i+farg_reg_base].erase(i);
+                        reg2fargnos.erase(i+farg_reg_base);
                     } else {
-                        for(auto tmp_argno: reg2fargnos[i+arg_reg_base]) {
+                        for(auto tmp_argno: reg2fargnos[i+farg_reg_base]) {
                             if(tmp_argno != i) {
                                 i = tmp_argno;
                                 break;
@@ -1321,13 +1321,13 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::caller_fargs_move(CallIns
                     }
                 } else {
                     reg_dependency_chain.push_back({fargs[i], i});
-                    i = *reg2fargnos[i+arg_reg_base].begin();
+                    i = *reg2fargnos[i+farg_reg_base].begin();
                     if(i == reg_dependency_chain.begin()->second) {
                         //& found loop
                         //& check if or not no branches (a single circle)
                         bool is_single_circle = true; 
                         for(auto iter = reg_dependency_chain.begin(); iter != reg_dependency_chain.end(); iter++) {
-                            if(reg2fargnos[iter->second + arg_reg_base].size() > 1) {
+                            if(reg2fargnos[iter->second + farg_reg_base].size() > 1) {
                                 int next_argno;
                                 if(iter->first == reg_dependency_chain.rbegin()->first) {
                                     next_argno = reg_dependency_chain.begin()->second;
@@ -1335,7 +1335,7 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::caller_fargs_move(CallIns
                                     next_argno = (++iter)->second;
                                     iter--;
                                 }
-                                for(auto tmp_argno: reg2fargnos[iter->second + arg_reg_base]) {
+                                for(auto tmp_argno: reg2fargnos[iter->second + farg_reg_base]) {
                                     if(tmp_argno != next_argno) {
                                         i = tmp_argno;
                                         break;
@@ -1355,13 +1355,13 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::caller_fargs_move(CallIns
                                     continue;
                                 int arg_no = riter->second;
                                 int src_reg_id = fval2interval[riter->first]->reg_id;
-                                to_move_locs.push_back(std::make_pair(new RegLoc(arg_no+arg_reg_base, true), new RegLoc(src_reg_id, true)));
+                                to_move_locs.push_back(std::make_pair(new RegLoc(arg_no+farg_reg_base, true), new RegLoc(src_reg_id, true)));
                                 is_args_moved[arg_no] = true;        
                                 reg2fargnos[src_reg_id].erase(arg_no);
                                 if(reg2fargnos[src_reg_id].empty())
                                     reg2fargnos.erase(src_reg_id);
                             }
-                            to_move_locs.push_back(std::make_pair(new RegLoc(reg_dependency_chain.rbegin()->second + arg_reg_base, true), new RegLoc(reg_fs1, true)));
+                            to_move_locs.push_back(std::make_pair(new RegLoc(reg_dependency_chain.rbegin()->second + farg_reg_base, true), new RegLoc(reg_fs1, true)));
                             int arg_no = reg_dependency_chain.rbegin()->second;
                             int src_reg_id = fval2interval[reg_dependency_chain.rbegin()->first]->reg_id;
                             is_args_moved[arg_no] = true; 
@@ -1376,18 +1376,18 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::caller_fargs_move(CallIns
             } else {
                 if(fval2interval.find(fargs[i]) == fval2interval.end()) {
                     auto const_fp =  dynamic_cast<ConstantFP*>(fargs[i]);
-                    to_move_locs.push_back(std::make_pair(new RegLoc(i + arg_reg_base, true), new ConstPool(const_fp->get_value())));
+                    to_move_locs.push_back(std::make_pair(new RegLoc(i + farg_reg_base, true), new ConstPool(const_fp->get_value())));
                     is_args_moved[i] = true;
                     break;
                 } else {
                     int src_reg_id = fval2interval[fargs[i]]->reg_id;
                     if(src_reg_id < 0) {
                         RegBase *regbase = val2stack[fargs[i]];
-                        to_move_locs.push_back(std::make_pair(new RegLoc(i + arg_reg_base, true), regbase));
+                        to_move_locs.push_back(std::make_pair(new RegLoc(i + farg_reg_base, true), regbase));
                         is_args_moved[i] = true;
                         break;
                     } else {
-                        to_move_locs.push_back(std::make_pair(new RegLoc(i + arg_reg_base, true), new RegLoc(src_reg_id, true)));
+                        to_move_locs.push_back(std::make_pair(new RegLoc(i + farg_reg_base, true), new RegLoc(src_reg_id, true)));
                         is_args_moved[i] = true;
                         reg2fargnos[src_reg_id].erase(i);
                         if(reg2fargnos[src_reg_id].empty())
@@ -1398,20 +1398,20 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::caller_fargs_move(CallIns
                                 auto fargno = riter->second;
                                 if(fval2interval.find(fargs[fargno]) == fval2interval.end()) {
                                     auto const_fp =  dynamic_cast<ConstantFP*>(farg);
-                                    to_move_locs.push_back(std::make_pair(new RegLoc(fargno + arg_reg_base, true), new ConstPool(const_fp->get_value())));
+                                    to_move_locs.push_back(std::make_pair(new RegLoc(fargno + farg_reg_base, true), new ConstPool(const_fp->get_value())));
                                     is_args_moved[fargno] = true;
                                     break;
                                 } else {
                                     int src_reg_id = fval2interval[farg]->reg_id;
                                     if(src_reg_id < 0) {
                                         RegBase *regbase = val2stack[farg];
-                                        to_move_locs.push_back(std::make_pair(new RegLoc(fargno + arg_reg_base, true), regbase));
+                                        to_move_locs.push_back(std::make_pair(new RegLoc(fargno + farg_reg_base, true), regbase));
                                         is_args_moved[fargno] = true;
                                         break;
                                     } else {
-                                        if(reg2fargnos.find(fargno + arg_reg_base) != reg2fargnos.end()) 
+                                        if(reg2fargnos.find(fargno + farg_reg_base) != reg2fargnos.end()) 
                                             break;
-                                        to_move_locs.push_back(std::make_pair(new RegLoc(fargno + arg_reg_base, true), new RegLoc(src_reg_id, true)));
+                                        to_move_locs.push_back(std::make_pair(new RegLoc(fargno + farg_reg_base, true), new RegLoc(src_reg_id, true)));
                                         is_args_moved[fargno] = true;
                                         reg2fargnos[src_reg_id].erase(fargno);
                                         if(reg2fargnos[src_reg_id].empty())
