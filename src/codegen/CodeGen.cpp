@@ -10,9 +10,7 @@
 
 void sysY_asbuilder::module_gen() {
     std::string loongarch_header;
-    std::cout<<"globals_def_gen start"<<std::endl;
     globals_def_gen();
-    std::cout<<"globals_def_gen end"<<std::endl;
     auto regalloc_driver = new RegAllocDriver(m_->get_module());
     regalloc_driver->compute_reg_alloc();
     
@@ -406,7 +404,7 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::callee_iargs_move(Functio
                     i = target_reg_id - arg_reg_base;
                     if(iargs_vector[i] == iargs_dependency_chain.begin()->first) {
                         //& found loop
-                        to_move_locs.push_back(std::make_pair(new RegLoc(reg_s1, false), new RegLoc(arg_reg_base + iargs_dependency_chain.rbegin()->second, false)));
+                        to_move_locs.push_back(std::make_pair(new RegLoc(reg_x, false), new RegLoc(arg_reg_base + iargs_dependency_chain.rbegin()->second, false)));
                         for(auto riter = iargs_dependency_chain.rbegin(); riter != iargs_dependency_chain.rend(); riter++) {
                             if(riter->first == iargs_dependency_chain.rbegin()->first)
                                 continue;
@@ -414,7 +412,7 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::callee_iargs_move(Functio
                             to_move_locs.push_back(std::make_pair(new RegLoc(ival2interval[iarg]->reg_id, false), new RegLoc(arg_reg_base + riter->second, false)));
                             is_args_moved[riter->second] = true;
                         }
-                        to_move_locs.push_back(std::make_pair(new RegLoc(ival2interval[iargs_dependency_chain.rbegin()->first]->reg_id, false), new RegLoc(reg_s1, false)));
+                        to_move_locs.push_back(std::make_pair(new RegLoc(ival2interval[iargs_dependency_chain.rbegin()->first]->reg_id, false), new RegLoc(reg_x, false)));
                         is_args_moved[iargs_dependency_chain.rbegin()->second] = true;
                         iargs_dependency_chain.clear();
                         break;
@@ -1156,7 +1154,7 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::caller_iargs_move(CallIns
                             }
                         }
                         if(is_single_circle) {
-                            to_move_locs.push_back(std::make_pair(new RegLoc(reg_s1, false), new RegLoc(ival2interval[reg_dependency_chain.rbegin()->first]->reg_id, false)));
+                            to_move_locs.push_back(std::make_pair(new RegLoc(reg_x, false), new RegLoc(ival2interval[reg_dependency_chain.rbegin()->first]->reg_id, false)));
                             for(auto riter= reg_dependency_chain.rbegin(); riter != reg_dependency_chain.rend(); riter++) {
                                 if(riter->first == reg_dependency_chain.rbegin()->first)
                                     continue;
@@ -1168,7 +1166,7 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::caller_iargs_move(CallIns
                                 if(reg2iargnos[src_reg_id].empty())
                                     reg2iargnos.erase(src_reg_id);
                             }
-                            to_move_locs.push_back(std::make_pair(new RegLoc(reg_dependency_chain.rbegin()->second + arg_reg_base, false), new RegLoc(reg_s1, false)));
+                            to_move_locs.push_back(std::make_pair(new RegLoc(reg_dependency_chain.rbegin()->second + arg_reg_base, false), new RegLoc(reg_x, false)));
                             int arg_no = reg_dependency_chain.rbegin()->second;
                             int src_reg_id = ival2interval[reg_dependency_chain.rbegin()->first]->reg_id;
                             is_args_moved[arg_no] = true; 
@@ -2254,7 +2252,7 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::idata_move(std::vector<HL
                             }
                         }
                         if(is_single_circle) {
-                            to_move_locs.push_back(std::make_pair(new RegLoc(reg_s1, false) , srcs[*loc_dependency_chain.rbegin()]));
+                            to_move_locs.push_back(std::make_pair(new RegLoc(reg_x, false) , srcs[*loc_dependency_chain.rbegin()]));
                             for(auto riter = loc_dependency_chain.rbegin(); riter != loc_dependency_chain.rend(); riter++) {
                                 if(*riter == *loc_dependency_chain.rbegin())
                                     continue;
@@ -2265,7 +2263,7 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::idata_move(std::vector<HL
                                     src2dstnos.erase(srcs[*riter]);
                                 }  
                             }
-                            to_move_locs.push_back(std::make_pair(dsts[*loc_dependency_chain.rbegin()] , new RegLoc(reg_s1, false)));
+                            to_move_locs.push_back(std::make_pair(dsts[*loc_dependency_chain.rbegin()] , new RegLoc(reg_x, false)));
                             int tmp_no = *loc_dependency_chain.rbegin();
                             is_data_moved[tmp_no] = true;
                             src2dstnos[srcs[tmp_no]].erase(tmp_no);
@@ -2393,7 +2391,7 @@ std::vector<std::pair<HLLoc*, HLLoc*>> sysY_asbuilder::fdata_move(std::vector<HL
                                     src2dstnos.erase(srcs[*riter]);
                                 }  
                             }
-                            to_move_locs.push_back(std::make_pair(dsts[*loc_dependency_chain.rbegin()], new RegLoc(reg_s1, true)));
+                            to_move_locs.push_back(std::make_pair(dsts[*loc_dependency_chain.rbegin()], new RegLoc(reg_fs1, true)));
                             int tmp_no = *loc_dependency_chain.rbegin();
                             is_data_moved[tmp_no] = true;
                             src2dstnos[srcs[tmp_no]].erase(tmp_no);

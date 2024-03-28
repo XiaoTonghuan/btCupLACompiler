@@ -5,4 +5,29 @@ add_library(
     FuncInfo.cpp
     DeadCode.cpp
     Pass.cpp
+    ActiveVar.cpp
+    Check.cpp
+    CFGAnalyse.cpp
+    ConstProp.cpp
+    LIR.cpp
+    RDominateTree.cpp
+    LoopInvariant.cpp
+    StrengthReduction.cpp
+    AlgeSimplify.cpp
+    DeadCodeEliWithBr.cpp
+    LoopExpansion.cpp
+    DeadStoreEli.cpp
+    LocalComSubExprEli.cpp
+    FuncInline.cpp
+    TailRecursionElim.cpp
+    InstructionScheduling.cpp
+    LoopSearch.cpp
+    LoopInfo.cpp
+    LoopStrengthReduction.cpp
+    RedundantInstsEli.cpp
+    AgressiveConstProp.cpp
+    RecSeq.cpp
+    VarLoopExpansion.cpp
+    AgressiveLocalComSubExprEli.cpp
+    utils.cpp
 )

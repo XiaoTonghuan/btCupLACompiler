@@ -78,12 +78,12 @@ private:
 
     const std::vector<int> all_available_freg_ids = {
         reg_ft0, reg_ft1, reg_ft2, reg_ft3, reg_ft4, reg_ft5, reg_ft6, reg_ft7, reg_ft8, reg_ft9, reg_ft10, reg_ft11,reg_ft12,reg_ft13,reg_ft14,reg_ft15,
-        reg_fs0,reg_fs1,reg_fs2, reg_fs3, reg_fs4, reg_fs5, reg_fs6, reg_fs7, 
+        reg_fs0,reg_fs2, reg_fs3, reg_fs4, reg_fs5, reg_fs6, reg_fs7, 
         reg_fa0, reg_fa1, reg_fa2, reg_fa3, reg_fa4, reg_fa5, reg_fa6, reg_fa7
     };
 
     const std::set<int> callee_saved_iregs = {
-        reg_s0, reg_s2, reg_s3, 
+        reg_s0,reg_s1,reg_s2, reg_s3, 
         reg_s4, reg_s5, reg_s6, reg_s7, 
         reg_s8
     };
