@@ -3,12 +3,13 @@ import os
 import csv
 
 # 定义要执行的可执行文件及其参数, 测试路径
-paths = ['./tests/sytest/func'] 
-executable_file = "./build/parser"
+paths = ['./'] 
+# executable_file = "./build/parser"
+executable_file = "./build/cminusfc"
 target_end = '.sy'
 output_file_csv = './output.csv'
 
-def test_one(arguments):
+def test_one(arguments, other_argument = None):
 
     keys = ['test_example','stderr','stdout','retcode','others']
     res = dict.fromkeys(keys)
@@ -17,7 +18,7 @@ def test_one(arguments):
 
     try:
         # 创建子进程并执行可执行文件
-        process = subprocess.Popen([executable_file] + arguments, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen([executable_file] + arguments + other_argument, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         # 获取标准输出和标准错误
         stdout, stderr = process.communicate()
@@ -45,6 +46,9 @@ def format_out(out_file,example_output):
         for item in zip(*example_output.values()):
             writer.writerow(item)
 
+# def test_asm():
+
+
 if __name__ == '__main__':
     
     folder_output = {
@@ -59,7 +63,7 @@ if __name__ == '__main__':
         files = os.listdir(folder)
         for file in files:
             if file.endswith(target_end):
-                ans_example = test_one(['/'.join([folder,file])])
+                ans_example = test_one(['/'.join([folder,file])],['-mem2reg','-S'])
                 for key, val in ans_example.items():
                     folder_output[key].append(val)
 
