@@ -1,3 +1,7 @@
 build/
 .*
 tests/
+toolchain-loongarch64-linux-gnu-cross
+*.s
+qemu-x86_64-to-loongarch64
+output.csv

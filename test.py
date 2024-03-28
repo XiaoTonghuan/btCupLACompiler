@@ -3,7 +3,7 @@ import os
 import csv
 
 # 定义要执行的可执行文件及其参数, 测试路径
-paths = ['./'] 
+paths = ['./tests/sytest/func'] 
 # executable_file = "./build/parser"
 executable_file = "./build/cminusfc"
 target_end = '.sy'
