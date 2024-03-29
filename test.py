@@ -4,12 +4,13 @@ import csv
 
 # 定义要执行的可执行文件及其参数, 测试路径
 paths = ['./tests/sytest/func'] 
+# paths = ['./']
 # executable_file = "./build/parser"
 executable_file = "./build/cminusfc"
 target_end = '.sy'
 output_file_csv = './output.csv'
 
-def test_one(arguments, other_argument = None):
+def test_one(arguments, other_argument = None, mask = 0b1111):
 
     keys = ['test_example','stderr','stdout','retcode','others']
     res = dict.fromkeys(keys)
@@ -22,7 +23,7 @@ def test_one(arguments, other_argument = None):
 
         # 获取标准输出和标准错误
         stdout, stderr = process.communicate()
-
+        
         # 输出标准输出和标准错误内容
         res['stderr'] = stderr.decode("utf8")
         res['stdout'] = stdout.decode('utf8')
@@ -35,6 +36,13 @@ def test_one(arguments, other_argument = None):
         res['others'].append('找不到可执行文件')
     except Exception as e:
         res['others'].append('其他异常')
+    
+
+    keylst = ['stderr','stdout','retcode','others']
+
+    for i in range(len(keylst)):
+        if mask >> i & 1 == 0:
+            res[ keylst[i] ] = 'masked'
 
     return res
 
@@ -63,7 +71,7 @@ if __name__ == '__main__':
         files = os.listdir(folder)
         for file in files:
             if file.endswith(target_end):
-                ans_example = test_one(['/'.join([folder,file])],['-mem2reg','-S'])
+                ans_example = test_one(['/'.join([folder,file])],['-mem2reg','-S'],0b1101)
                 for key, val in ans_example.items():
                     folder_output[key].append(val)
 
