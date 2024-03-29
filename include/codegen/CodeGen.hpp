@@ -15,6 +15,7 @@ class sysY_asbuilder {
 public:
     sysY_asbuilder(Module *m) {
         m_ = new HLModule(m);
+        fcc_gen=false;
     }
 
 public:
@@ -143,4 +144,5 @@ private:
     HLModule *m_;
     HLFunction *cur_func_;
     HLBlock *cur_bb_;
+    bool fcc_gen;
 };

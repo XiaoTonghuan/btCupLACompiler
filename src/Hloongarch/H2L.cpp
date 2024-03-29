@@ -200,7 +200,7 @@ std::string snez(Reg *rd, Reg *rs) {
 
 std::string feqs(Reg *rd1, Reg *rs1, Reg *rs2) {
     std::string loongarch_code;
-    loongarch_code += __L_TRIPLE_REG_OP__("fcmp.seq.s", rd1, rs1, rs2);
+    loongarch_code += __L_TRIPLE_REG_OP__("fcmp.seq.s", new Reg(reg_fcc0,false,true), rs1, rs2);
     return loongarch_code;
 }
 
@@ -242,6 +242,13 @@ std::string blt(Reg *rs1, Reg *rs2, Label *label) {
     return loongarch_code;
 }
 
+std::string bceqz(Reg *rs1, Label *label) {
+    std::string loongarch_code;
+    loongarch_code += H2L::space + "bceqz" + H2L::space + rs1->get_loongarch_code() + ", "  + label->get_loongarch_code() + H2L::newline;
+    return loongarch_code;
+}
+
+
 //& mem ops
 std::string sd(Reg *src, Reg *base, int offset) {
     std::string loongarch_code;
@@ -275,7 +282,7 @@ std::string fsw(Reg *src, Reg *base, int offset) {
 
 std::string flw(Reg *dst, Reg *base, int offset) {
     std::string loongarch_code;
-    loongarch_code += H2L::space + "fld.w" + H2L::space + dst->get_loongarch_code() + ", " + base->get_loongarch_code() +"," + std::to_string(offset) + H2L::newline;
+    loongarch_code += H2L::space + "fld.s" + H2L::space + dst->get_loongarch_code() + ", " + base->get_loongarch_code() +"," + std::to_string(offset) + H2L::newline;
     return loongarch_code;
 }
 
