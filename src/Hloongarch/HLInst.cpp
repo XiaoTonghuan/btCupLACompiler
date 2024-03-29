@@ -2217,11 +2217,11 @@ std::string HLFBeqInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs0, true), new Reg(mem_rval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::feqs(new Reg(reg_x, false), new Reg(reg_fs1, true), new Reg(reg_fs0, true));
+            loongarch_code += H2L::feqs(new Reg(reg_fcc0, false,true), new Reg(reg_fs1, true), new Reg(reg_fs0, true));
         } else {
-            loongarch_code += H2L::feqs(new Reg(reg_x, false), new Reg(reg_fs1, true), dynamic_cast<Reg*>(rval_));
+            loongarch_code += H2L::feqs(new Reg(reg_fcc0, false,true), new Reg(reg_fs1, true), dynamic_cast<Reg*>(rval_));
         }
-        loongarch_code += H2L::blt(new Reg(reg_zero, false), new Reg(reg_x, false), label_);
+        loongarch_code += H2L::bceqz(new Reg(reg_fcc0, false,true), label_);
     } else if(const_rval) {
         loongarch_code += H2L::li(new Reg(reg_x, false), *(uint32_t*)&(const_rval->get_fval()));
         loongarch_code += H2L::fmvsx(new Reg(reg_fs1, true), new Reg(reg_x, false));
@@ -2234,11 +2234,11 @@ std::string HLFBeqInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs0, true), new Reg(mem_lval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::feqs(new Reg(reg_x, false), new Reg(reg_fs0, true), new Reg(reg_fs1, true));
+            loongarch_code += H2L::feqs(new Reg(reg_fcc0, false,true), new Reg(reg_fs0, true), new Reg(reg_fs1, true));
         } else {
-            loongarch_code += H2L::feqs(new Reg(reg_x, false), dynamic_cast<Reg*>(lval_), new Reg(reg_fs1, true));
+            loongarch_code += H2L::feqs(new Reg(reg_fcc0, false,true), dynamic_cast<Reg*>(lval_), new Reg(reg_fs1, true));
         }
-        loongarch_code += H2L::blt(new Reg(reg_zero, false), new Reg(reg_x, false), label_);
+        loongarch_code += H2L::bceqz(new Reg(reg_fcc0, false,true), label_);
     } else {
         auto mem_lval = dynamic_cast<Mem*>(lval_);
         auto mem_rval = dynamic_cast<Mem*>(rval_);
@@ -2257,7 +2257,7 @@ std::string HLFBeqInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs0, true), new Reg(mem_rval->get_reg_id(), false), offset2);
             }
-            loongarch_code += H2L::feqs(new Reg(reg_x, false), new Reg(reg_fs1, true), new Reg(reg_fs0, true));
+            loongarch_code += H2L::feqs(new Reg(reg_fcc0, false,true), new Reg(reg_fs1, true), new Reg(reg_fs0, true));
         } else if(mem_lval) {
             int offset = mem_lval->get_offset();
             if(offset < -2048 || offset > 2047) {
@@ -2266,7 +2266,7 @@ std::string HLFBeqInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs1, true), new Reg(mem_lval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::feqs(new Reg(reg_x, false), new Reg(reg_fs1, true), dynamic_cast<Reg*>(rval_));
+            loongarch_code += H2L::feqs(new Reg(reg_fcc0, false,true), new Reg(reg_fs1, true), dynamic_cast<Reg*>(rval_));
         } else if(mem_rval) {
             int offset = mem_rval->get_offset();
             if(offset < -2048 || offset > 2047) {
@@ -2275,11 +2275,11 @@ std::string HLFBeqInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs1, true), new Reg(mem_rval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::feqs(new Reg(reg_x, false), dynamic_cast<Reg*>(lval_), new Reg(reg_fs1, true));
+            loongarch_code += H2L::feqs(new Reg(reg_fcc0, false,true), dynamic_cast<Reg*>(lval_), new Reg(reg_fs1, true));
         } else {
-            loongarch_code += H2L::feqs(new Reg(reg_x, false), dynamic_cast<Reg*>(lval_), dynamic_cast<Reg*>(rval_));
+            loongarch_code += H2L::feqs(new Reg(reg_fcc0, false,true), dynamic_cast<Reg*>(lval_), dynamic_cast<Reg*>(rval_));
         }
-        loongarch_code += H2L::blt(new Reg(reg_zero, false), new Reg(reg_x, false), label_);
+        loongarch_code += H2L::bceqz(new Reg(reg_fcc0, false,true), label_);
     }
 
     return loongarch_code;
@@ -2312,11 +2312,11 @@ std::string HLFBgeInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs0, true), new Reg(mem_rval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::fles(new Reg(reg_x, false), new Reg(reg_fs0, true), new Reg(reg_fs1, true));
+            loongarch_code += H2L::fles(new Reg(reg_fcc0, false,true), new Reg(reg_fs0, true), new Reg(reg_fs1, true));
         } else {
-            loongarch_code += H2L::fles(new Reg(reg_x, false), dynamic_cast<Reg*>(rval_), new Reg(reg_fs1, true));
+            loongarch_code += H2L::fles(new Reg(reg_fcc0, false,true), dynamic_cast<Reg*>(rval_), new Reg(reg_fs1, true));
         }
-        loongarch_code += H2L::blt(new Reg(reg_zero, false), new Reg(reg_x, false), label_);
+        loongarch_code += H2L::bceqz(new Reg(reg_fcc0, false,true), label_);
     } else if(const_rval) {
         loongarch_code += H2L::li(new Reg(reg_x, false), *(uint32_t*)&(const_rval->get_fval()));
         loongarch_code += H2L::fmvsx(new Reg(reg_fs1, true), new Reg(reg_x, false));
@@ -2329,11 +2329,11 @@ std::string HLFBgeInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs0, true), new Reg(mem_lval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::fles(new Reg(reg_x, false), new Reg(reg_fs1, true), new Reg(reg_fs0, true));
+            loongarch_code += H2L::fles(new Reg(reg_fcc0, false,true), new Reg(reg_fs1, true), new Reg(reg_fs0, true));
         } else {
-            loongarch_code += H2L::fles(new Reg(reg_x, false), new Reg(reg_fs1, true), dynamic_cast<Reg*>(lval_));
+            loongarch_code += H2L::fles(new Reg(reg_fcc0, false,true), new Reg(reg_fs1, true), dynamic_cast<Reg*>(lval_));
         }
-        loongarch_code += H2L::blt(new Reg(reg_zero, false), new Reg(reg_x, false), label_);
+        loongarch_code += H2L::bceqz(new Reg(reg_fcc0, false,true), label_);
     } else {
         auto mem_lval = dynamic_cast<Mem*>(lval_);
         auto mem_rval = dynamic_cast<Mem*>(rval_);
@@ -2352,7 +2352,7 @@ std::string HLFBgeInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs0, true), new Reg(mem_rval->get_reg_id(), false), offset2);
             }
-            loongarch_code += H2L::fles(new Reg(reg_x, false), new Reg(reg_fs0, true), new Reg(reg_fs1, true));
+            loongarch_code += H2L::fles(new Reg(reg_fcc0, false,true), new Reg(reg_fs0, true), new Reg(reg_fs1, true));
         } else if(mem_lval) {
             int offset = mem_lval->get_offset();
             if(offset < -2048 || offset > 2047) {
@@ -2361,7 +2361,7 @@ std::string HLFBgeInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs1, true), new Reg(mem_lval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::fles(new Reg(reg_x, false), dynamic_cast<Reg*>(rval_), new Reg(reg_fs1, true));
+            loongarch_code += H2L::fles(new Reg(reg_fcc0, false,true), dynamic_cast<Reg*>(rval_), new Reg(reg_fs1, true));
         } else if(mem_rval) {
             int offset = mem_rval->get_offset();
             if(offset < -2048 || offset > 2047) {
@@ -2370,11 +2370,11 @@ std::string HLFBgeInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs1, true), new Reg(mem_rval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::fles(new Reg(reg_x, false), new Reg(reg_fs1, true), dynamic_cast<Reg*>(lval_));
+            loongarch_code += H2L::fles(new Reg(reg_fcc0, false,true), new Reg(reg_fs1, true), dynamic_cast<Reg*>(lval_));
         } else {
-            loongarch_code += H2L::fles(new Reg(reg_x, false), dynamic_cast<Reg*>(rval_), dynamic_cast<Reg*>(lval_));
+            loongarch_code += H2L::fles(new Reg(reg_fcc0, false,true), dynamic_cast<Reg*>(rval_), dynamic_cast<Reg*>(lval_));
         }
-        loongarch_code += H2L::blt(new Reg(reg_zero, false), new Reg(reg_x, false), label_);
+        loongarch_code += H2L::bceqz(new Reg(reg_fcc0, false,true), label_);
     }
 
     return loongarch_code;
@@ -2406,11 +2406,11 @@ std::string HLFBgtInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs0, true), new Reg(mem_rval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::flts(new Reg(reg_x, false), new Reg(reg_fs0, true), new Reg(reg_fs1, true));
+            loongarch_code += H2L::flts(new Reg(reg_fcc0, false,true), new Reg(reg_fs0, true), new Reg(reg_fs1, true));
         } else {
-            loongarch_code += H2L::flts(new Reg(reg_x, false), dynamic_cast<Reg*>(rval_), new Reg(reg_fs1, true));
+            loongarch_code += H2L::flts(new Reg(reg_fcc0, false,true), dynamic_cast<Reg*>(rval_), new Reg(reg_fs1, true));
         }
-        loongarch_code += H2L::blt(new Reg(reg_zero, false), new Reg(reg_x, false), label_);
+        loongarch_code += H2L::bceqz(new Reg(reg_fcc0, false,true), label_);
     } else if(const_rval) {
         loongarch_code += H2L::li(new Reg(reg_x, false), *(uint32_t*)&(const_rval->get_fval()));
         loongarch_code += H2L::fmvsx(new Reg(reg_fs1, true), new Reg(reg_x, false));
@@ -2423,11 +2423,11 @@ std::string HLFBgtInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs0, true), new Reg(mem_lval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::flts(new Reg(reg_x, false), new Reg(reg_fs1, true), new Reg(reg_fs0, true));
+            loongarch_code += H2L::flts(new Reg(reg_fcc0, false,true), new Reg(reg_fs1, true), new Reg(reg_fs0, true));
         } else {
-            loongarch_code += H2L::flts(new Reg(reg_x, false), new Reg(reg_fs1, true), dynamic_cast<Reg*>(lval_));
+            loongarch_code += H2L::flts(new Reg(reg_fcc0, false,true), new Reg(reg_fs1, true), dynamic_cast<Reg*>(lval_));
         }
-        loongarch_code += H2L::blt(new Reg(reg_zero, false), new Reg(reg_x, false), label_);
+        loongarch_code += H2L::bceqz(new Reg(reg_fcc0, false,true), label_);
     } else {
         auto mem_lval = dynamic_cast<Mem*>(lval_);
         auto mem_rval = dynamic_cast<Mem*>(rval_);
@@ -2446,7 +2446,7 @@ std::string HLFBgtInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs0, true), new Reg(mem_rval->get_reg_id(), false), offset2);
             }
-            loongarch_code += H2L::flts(new Reg(reg_x, false), new Reg(reg_fs0, true), new Reg(reg_fs1, true));
+            loongarch_code += H2L::flts(new Reg(reg_fcc0, false,true), new Reg(reg_fs0, true), new Reg(reg_fs1, true));
         } else if(mem_lval) {
             int offset = mem_lval->get_offset();
             if(offset < -2048 || offset > 2047) {
@@ -2455,7 +2455,7 @@ std::string HLFBgtInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs1, true), new Reg(mem_lval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::flts(new Reg(reg_x, false), dynamic_cast<Reg*>(rval_), new Reg(reg_fs1, true));
+            loongarch_code += H2L::flts(new Reg(reg_fcc0, false,true), dynamic_cast<Reg*>(rval_), new Reg(reg_fs1, true));
         } else if(mem_rval) {
             int offset = mem_rval->get_offset();
             if(offset < -2048 || offset > 2047) {
@@ -2464,11 +2464,11 @@ std::string HLFBgtInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs1, true), new Reg(mem_rval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::flts(new Reg(reg_x, false), new Reg(reg_fs1, true), dynamic_cast<Reg*>(lval_));
+            loongarch_code += H2L::flts(new Reg(reg_fcc0, false,true), new Reg(reg_fs1, true), dynamic_cast<Reg*>(lval_));
         } else {
-            loongarch_code += H2L::flts(new Reg(reg_x, false), dynamic_cast<Reg*>(rval_), dynamic_cast<Reg*>(lval_));
+            loongarch_code += H2L::flts(new Reg(reg_fcc0, false,true), dynamic_cast<Reg*>(rval_), dynamic_cast<Reg*>(lval_));
         }
-        loongarch_code += H2L::blt(new Reg(reg_zero, false), new Reg(reg_x, false), label_);
+        loongarch_code += H2L::bceqz(new Reg(reg_fcc0, false,true), label_);
     }
 
     return loongarch_code;
@@ -2500,11 +2500,11 @@ std::string HLFBleInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs0, true), new Reg(mem_rval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::fles(new Reg(reg_x, false), new Reg(reg_fs1, true), new Reg(reg_fs0, true));
+            loongarch_code += H2L::fles(new Reg(reg_fcc0, false,true), new Reg(reg_fs1, true), new Reg(reg_fs0, true));
         } else {
-            loongarch_code += H2L::fles(new Reg(reg_x, false), new Reg(reg_fs1, true), dynamic_cast<Reg*>(rval_));
+            loongarch_code += H2L::fles(new Reg(reg_fcc0, false,true), new Reg(reg_fs1, true), dynamic_cast<Reg*>(rval_));
         }
-        loongarch_code += H2L::blt(new Reg(reg_zero, false), new Reg(reg_x, false), label_);
+        loongarch_code += H2L::bceqz(new Reg(reg_fcc0, false,true), label_);
     } else if(const_rval) {
         loongarch_code += H2L::li(new Reg(reg_x, false), *(uint32_t*)&(const_rval->get_fval()));
         loongarch_code += H2L::fmvsx(new Reg(reg_fs1, true), new Reg(reg_x, false));
@@ -2517,11 +2517,11 @@ std::string HLFBleInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs0, true), new Reg(mem_lval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::fles(new Reg(reg_x, false), new Reg(reg_fs0, true), new Reg(reg_fs1, true));
+            loongarch_code += H2L::fles(new Reg(reg_fcc0, false,true), new Reg(reg_fs0, true), new Reg(reg_fs1, true));
         } else {
-            loongarch_code += H2L::fles(new Reg(reg_x, false), dynamic_cast<Reg*>(lval_), new Reg(reg_fs1, true));
+            loongarch_code += H2L::fles(new Reg(reg_fcc0, false,true), dynamic_cast<Reg*>(lval_), new Reg(reg_fs1, true));
         }
-        loongarch_code += H2L::blt(new Reg(reg_zero, false), new Reg(reg_x, false), label_);
+        loongarch_code += H2L::bceqz(new Reg(reg_fcc0, false,true), label_);
     } else {
         auto mem_lval = dynamic_cast<Mem*>(lval_);
         auto mem_rval = dynamic_cast<Mem*>(rval_);
@@ -2540,7 +2540,7 @@ std::string HLFBleInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs0, true), new Reg(mem_rval->get_reg_id(), false), offset2);
             }
-            loongarch_code += H2L::fles(new Reg(reg_x, false), new Reg(reg_fs1, true), new Reg(reg_fs0, true));
+            loongarch_code += H2L::fles(new Reg(reg_fcc0, false,true), new Reg(reg_fs1, true), new Reg(reg_fs0, true));
         } else if(mem_lval) {
             int offset = mem_lval->get_offset();
             if(offset < -2048 || offset > 2047) {
@@ -2549,7 +2549,7 @@ std::string HLFBleInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs1, true), new Reg(mem_lval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::fles(new Reg(reg_x, false), new Reg(reg_fs1, true), dynamic_cast<Reg*>(rval_));
+            loongarch_code += H2L::fles(new Reg(reg_fcc0, false,true), new Reg(reg_fs1, true), dynamic_cast<Reg*>(rval_));
         } else if(mem_rval) {
             int offset = mem_rval->get_offset();
             if(offset < -2048 || offset > 2047) {
@@ -2558,11 +2558,11 @@ std::string HLFBleInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs1, true), new Reg(mem_rval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::fles(new Reg(reg_x, false), dynamic_cast<Reg*>(lval_), new Reg(reg_fs1, true));
+            loongarch_code += H2L::fles(new Reg(reg_fcc0, false,true), dynamic_cast<Reg*>(lval_), new Reg(reg_fs1, true));
         } else {
-            loongarch_code += H2L::fles(new Reg(reg_x, false), dynamic_cast<Reg*>(lval_), dynamic_cast<Reg*>(rval_));
+            loongarch_code += H2L::fles(new Reg(reg_fcc0, false,true), dynamic_cast<Reg*>(lval_), dynamic_cast<Reg*>(rval_));
         }
-        loongarch_code += H2L::blt(new Reg(reg_zero, false), new Reg(reg_x, false), label_);
+        loongarch_code += H2L::bceqz(new Reg(reg_fcc0, false,true), label_);
     }
 
     return loongarch_code;
@@ -2594,11 +2594,11 @@ std::string HLFBltInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs0, true), new Reg(mem_rval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::flts(new Reg(reg_x, false), new Reg(reg_fs1, true), new Reg(reg_fs0, true));
+            loongarch_code += H2L::flts(new Reg(reg_fcc0, false,true), new Reg(reg_fs1, true), new Reg(reg_fs0, true));
         } else {
-            loongarch_code += H2L::flts(new Reg(reg_x, false), new Reg(reg_fs1, true), dynamic_cast<Reg*>(rval_));
+            loongarch_code += H2L::flts(new Reg(reg_fcc0, false,true), new Reg(reg_fs1, true), dynamic_cast<Reg*>(rval_));
         }
-        loongarch_code += H2L::blt(new Reg(reg_zero, false), new Reg(reg_x, false), label_);
+        loongarch_code += H2L::bceqz(new Reg(reg_fcc0, false,true), label_);
     } else if(const_rval) {
         loongarch_code += H2L::li(new Reg(reg_x, false), *(uint32_t*)&(const_rval->get_fval()));
         loongarch_code += H2L::fmvsx(new Reg(reg_fs1, true), new Reg(reg_x, false));
@@ -2611,11 +2611,11 @@ std::string HLFBltInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs0, true), new Reg(mem_lval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::flts(new Reg(reg_x, false), new Reg(reg_fs0, true), new Reg(reg_fs1, true));
+            loongarch_code += H2L::flts(new Reg(reg_fcc0, false,true), new Reg(reg_fs0, true), new Reg(reg_fs1, true));
         } else {
-            loongarch_code += H2L::flts(new Reg(reg_x, false), dynamic_cast<Reg*>(lval_), new Reg(reg_fs1, true));
+            loongarch_code += H2L::flts(new Reg(reg_fcc0, false,true), dynamic_cast<Reg*>(lval_), new Reg(reg_fs1, true));
         }
-        loongarch_code += H2L::blt(new Reg(reg_zero, false), new Reg(reg_x, false), label_);
+        loongarch_code += H2L::bceqz(new Reg(reg_fcc0, false,true) , label_);
     } else {
         auto mem_lval = dynamic_cast<Mem*>(lval_);
         auto mem_rval = dynamic_cast<Mem*>(rval_);
@@ -2634,7 +2634,7 @@ std::string HLFBltInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs0, true), new Reg(mem_rval->get_reg_id(), false), offset2);
             }
-            loongarch_code += H2L::flts(new Reg(reg_x, false), new Reg(reg_fs1, true), new Reg(reg_fs0, true));
+            loongarch_code += H2L::flts(new Reg(reg_fcc0, false,true), new Reg(reg_fs1, true), new Reg(reg_fs0, true));
         } else if(mem_lval) {
             int offset = mem_lval->get_offset();
             if(offset < -2048 || offset > 2047) {
@@ -2643,7 +2643,7 @@ std::string HLFBltInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs1, true), new Reg(mem_lval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::flts(new Reg(reg_x, false), new Reg(reg_fs1, true), dynamic_cast<Reg*>(rval_));
+            loongarch_code += H2L::flts(new Reg(reg_fcc0, false,true), new Reg(reg_fs1, true), dynamic_cast<Reg*>(rval_));
         } else if(mem_rval) {
             int offset = mem_rval->get_offset();
             if(offset < -2048 || offset > 2047) {
@@ -2652,11 +2652,11 @@ std::string HLFBltInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs1, true), new Reg(mem_rval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::flts(new Reg(reg_x, false), dynamic_cast<Reg*>(lval_), new Reg(reg_fs1, true));
+            loongarch_code += H2L::flts(new Reg(reg_fcc0, false,true), dynamic_cast<Reg*>(lval_), new Reg(reg_fs1, true));
         } else {
-            loongarch_code += H2L::flts(new Reg(reg_x, false), dynamic_cast<Reg*>(lval_), dynamic_cast<Reg*>(rval_));
+            loongarch_code += H2L::flts(new Reg(reg_fcc0, false,true), dynamic_cast<Reg*>(lval_), dynamic_cast<Reg*>(rval_));
         }
-        loongarch_code += H2L::blt(new Reg(reg_zero, false), new Reg(reg_x, false), label_);
+        loongarch_code += H2L::bceqz(new Reg(reg_fcc0, false,true), label_);
     }
 
     return loongarch_code;
@@ -2688,11 +2688,11 @@ std::string HLFBneInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs0, true), new Reg(mem_rval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::feqs(new Reg(reg_x, false), new Reg(reg_fs1, true), new Reg(reg_fs0, true));
+            loongarch_code += H2L::feqs(new Reg(reg_fcc0, false,true), new Reg(reg_fs1, true), new Reg(reg_fs0, true));
         } else {
-            loongarch_code += H2L::feqs(new Reg(reg_x, false), new Reg(reg_fs1, true), dynamic_cast<Reg*>(rval_));
+            loongarch_code += H2L::feqs(new Reg(reg_fcc0, false,true), new Reg(reg_fs1, true), dynamic_cast<Reg*>(rval_));
         }
-        loongarch_code += H2L::beq(new Reg(reg_zero, false), new Reg(reg_x, false), label_);
+        loongarch_code += H2L::bceqz(new Reg(reg_fcc0, false,true), label_);
     } else if(const_rval) {
         loongarch_code += H2L::li(new Reg(reg_x, false), *(uint32_t*)&(const_rval->get_fval()));
         loongarch_code += H2L::fmvsx(new Reg(reg_fs1, true), new Reg(reg_x, false));
@@ -2705,11 +2705,11 @@ std::string HLFBneInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs0, true), new Reg(mem_lval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::feqs(new Reg(reg_x, false), new Reg(reg_fs0, true), new Reg(reg_fs1, true));
+            loongarch_code += H2L::feqs(new Reg(reg_fcc0, false,true), new Reg(reg_fs0, true), new Reg(reg_fs1, true));
         } else {
-            loongarch_code += H2L::feqs(new Reg(reg_x, false), dynamic_cast<Reg*>(lval_), new Reg(reg_fs1, true));
+            loongarch_code += H2L::feqs(new Reg(reg_fcc0, false,true), dynamic_cast<Reg*>(lval_), new Reg(reg_fs1, true));
         }
-        loongarch_code += H2L::beq(new Reg(reg_zero, false), new Reg(reg_x, false), label_);
+        loongarch_code += H2L::bceqz(new Reg(reg_fcc0, false,true), label_);
     } else {
         auto mem_lval = dynamic_cast<Mem*>(lval_);
         auto mem_rval = dynamic_cast<Mem*>(rval_);
@@ -2728,7 +2728,7 @@ std::string HLFBneInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs0, true), new Reg(mem_rval->get_reg_id(), false), offset2);
             }
-            loongarch_code += H2L::feqs(new Reg(reg_x, false), new Reg(reg_fs1, true), new Reg(reg_fs0, true));
+            loongarch_code += H2L::feqs(new Reg(reg_fcc0, false,true), new Reg(reg_fs1, true), new Reg(reg_fs0, true));
         } else if(mem_lval) {
             int offset = mem_lval->get_offset();
             if(offset < -2048 || offset > 2047) {
@@ -2737,7 +2737,7 @@ std::string HLFBneInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs1, true), new Reg(mem_lval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::feqs(new Reg(reg_x, false), new Reg(reg_fs1, true), dynamic_cast<Reg*>(rval_));
+            loongarch_code += H2L::feqs(new Reg(reg_fcc0, false,true), new Reg(reg_fs1, true), dynamic_cast<Reg*>(rval_));
         } else if(mem_rval) {
             int offset = mem_rval->get_offset();
             if(offset < -2048 || offset > 2047) {
@@ -2746,11 +2746,11 @@ std::string HLFBneInst::get_loongarch_code() {
             } else {
                 loongarch_code += H2L::flw(new Reg(reg_fs1, true), new Reg(mem_rval->get_reg_id(), false), offset);
             }
-            loongarch_code += H2L::feqs(new Reg(reg_x, false), dynamic_cast<Reg*>(lval_), new Reg(reg_fs1, true));
+            loongarch_code += H2L::feqs(new Reg(reg_fcc0, false,true), dynamic_cast<Reg*>(lval_), new Reg(reg_fs1, true));
         } else {
-            loongarch_code += H2L::feqs(new Reg(reg_x, false), dynamic_cast<Reg*>(lval_), dynamic_cast<Reg*>(rval_));
+            loongarch_code += H2L::feqs(new Reg(reg_fcc0, false,true), dynamic_cast<Reg*>(lval_), dynamic_cast<Reg*>(rval_));
         }
-        loongarch_code += H2L::beq(new Reg(reg_zero, false), new Reg(reg_x, false), label_);
+        loongarch_code += H2L::bceqz(new Reg(reg_fcc0, false,true), label_);
     }
 
     return loongarch_code;

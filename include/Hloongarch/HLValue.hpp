@@ -74,6 +74,15 @@ const int reg_fs5 = 29;
 const int reg_fs6 = 30;
 const int reg_fs7 = 31;
 
+const int reg_fcc0 = 0;
+const int reg_fcc1 = 1;
+const int reg_fcc2 = 2; 
+const int reg_fcc3 = 3;
+const int reg_fcc4 = 4;
+const int reg_fcc5 = 5;
+const int reg_fcc6 = 6;
+const int reg_fcc7 = 7;
+
 
 const std::string Ireg2name[32] = {
     "$zero", "$ra", "$tp", "$sp",
@@ -90,6 +99,10 @@ const std::string Freg2name[32] = {
     "$fs0", "$fs1", "$fs2", "$fs3","$fs4", "$fs5", "$fs6", "$fs7" 
 };
 
+const std::string Fccreg2name[8] = {
+    "$fcc0", "$fcc1", "$fcc2", "$fcc3", "$fcc4", "$fcc5", "$fcc6", "$fcc7" 
+};
+
 class HLVal {
 public:
     virtual bool is_reg() = 0;
@@ -100,7 +113,10 @@ public:
 
 class Reg: public HLVal {
 public:
-    Reg(int id, bool is_fp): id_(id), is_fp_(is_fp) {}
+    Reg(int id, bool is_fp): id_(id), is_fp_(is_fp) {
+        is_fcc_=false;
+    }
+    Reg(int id, bool is_fp,bool is_fcc): id_(id), is_fp_(is_fp),is_fcc_(is_fcc) {}
 public:
     int get_id() { return id_; }
     bool is_reg() final { return true; }
@@ -112,6 +128,7 @@ public:
 private:
     int id_;
     bool is_fp_;
+    bool is_fcc_;
 };
 
 class Mem: public HLVal {

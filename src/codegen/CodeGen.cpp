@@ -2782,76 +2782,76 @@ void sysY_asbuilder::instr_gen(Instruction * inst) {
                 switch (cmp_op) {
                     case CmpOp::EQ: {
                             if(const_cond1 && const_cond2) {
-                                cur_bb_->create_feqs(get_loongarch_reg(inst), new Const(const_cond1->get_value()), new Const(const_cond2->get_value()));
+                                cur_bb_->create_feqs(new Reg(reg_fcc0,false,true), new Const(const_cond1->get_value()), new Const(const_cond2->get_value()));
                             } else if(const_cond1) {
-                                cur_bb_->create_feqs(get_loongarch_reg(inst), new Const(const_cond1->get_value()), get_loongarch_reg(cond2));
+                                cur_bb_->create_feqs(new Reg(reg_fcc0,false,true), new Const(const_cond1->get_value()), get_loongarch_reg(cond2));
                             } else if(const_cond2) {
-                                cur_bb_->create_feqs(get_loongarch_reg(inst), get_loongarch_reg(cond1), new Const(const_cond2->get_value()));
+                                cur_bb_->create_feqs(new Reg(reg_fcc0,false,true), get_loongarch_reg(cond1), new Const(const_cond2->get_value()));
                             } else {
-                                cur_bb_->create_feqs(get_loongarch_reg(inst), get_loongarch_reg(cond1), get_loongarch_reg(cond2));
+                                cur_bb_->create_feqs(new Reg(reg_fcc0,false,true), get_loongarch_reg(cond1), get_loongarch_reg(cond2));
                             }
                         }
                         break;
                     case CmpOp::GE: {
                             if(const_cond1 && const_cond2) {
-                                cur_bb_->create_fges(get_loongarch_reg(inst), new Const(const_cond1->get_value()), new Const(const_cond2->get_value()));
+                                cur_bb_->create_fges(new Reg(reg_fcc0,false,true), new Const(const_cond1->get_value()), new Const(const_cond2->get_value()));
                             } else if(const_cond1) {
-                                cur_bb_->create_fges(get_loongarch_reg(inst), new Const(const_cond1->get_value()), get_loongarch_reg(cond2));
+                                cur_bb_->create_fges(new Reg(reg_fcc0,false,true), new Const(const_cond1->get_value()), get_loongarch_reg(cond2));
                             } else if(const_cond2) {
-                                cur_bb_->create_fges(get_loongarch_reg(inst), get_loongarch_reg(cond1), new Const(const_cond2->get_value()));
+                                cur_bb_->create_fges(new Reg(reg_fcc0,false,true), get_loongarch_reg(cond1), new Const(const_cond2->get_value()));
                             } else {
-                                cur_bb_->create_fges(get_loongarch_reg(inst), get_loongarch_reg(cond1), get_loongarch_reg(cond2));
+                                cur_bb_->create_fges(new Reg(reg_fcc0,false,true), get_loongarch_reg(cond1), get_loongarch_reg(cond2));
                             }
                         }
                         break;
                     case CmpOp::GT: {
                             if(const_cond1 && const_cond2) {
-                                cur_bb_->create_fgts(get_loongarch_reg(inst), new Const(const_cond1->get_value()), new Const(const_cond2->get_value()));
+                                cur_bb_->create_fgts(new Reg(reg_fcc0,false,true), new Const(const_cond1->get_value()), new Const(const_cond2->get_value()));
                             } else if(const_cond1) {
-                                cur_bb_->create_fgts(get_loongarch_reg(inst), new Const(const_cond1->get_value()), get_loongarch_reg(cond2));
+                                cur_bb_->create_fgts(new Reg(reg_fcc0,false,true), new Const(const_cond1->get_value()), get_loongarch_reg(cond2));
                             } else if(const_cond2) {
-                                cur_bb_->create_fgts(get_loongarch_reg(inst), get_loongarch_reg(cond1), new Const(const_cond2->get_value()));
+                                cur_bb_->create_fgts(new Reg(reg_fcc0,false,true), get_loongarch_reg(cond1), new Const(const_cond2->get_value()));
                             } else {
-                                cur_bb_->create_fgts(get_loongarch_reg(inst), get_loongarch_reg(cond1), get_loongarch_reg(cond2));
+                                cur_bb_->create_fgts(new Reg(reg_fcc0,false,true), get_loongarch_reg(cond1), get_loongarch_reg(cond2));
                             }
                         }
                         break;
 
                     case CmpOp::LE: {
                             if(const_cond1 && const_cond2) {
-                                cur_bb_->create_fles(get_loongarch_reg(inst), new Const(const_cond1->get_value()), new Const(const_cond2->get_value()));
+                                cur_bb_->create_fles(new Reg(reg_fcc0,false,true), new Const(const_cond1->get_value()), new Const(const_cond2->get_value()));
                             } else if(const_cond1) {
-                                cur_bb_->create_fles(get_loongarch_reg(inst), new Const(const_cond1->get_value()), get_loongarch_reg(cond2));
+                                cur_bb_->create_fles(new Reg(reg_fcc0,false,true), new Const(const_cond1->get_value()), get_loongarch_reg(cond2));
                             } else if(const_cond2) {
-                                cur_bb_->create_fles(get_loongarch_reg(inst), get_loongarch_reg(cond1), new Const(const_cond2->get_value()));
+                                cur_bb_->create_fles(new Reg(reg_fcc0,false,true), get_loongarch_reg(cond1), new Const(const_cond2->get_value()));
                             } else {
-                                cur_bb_->create_fles(get_loongarch_reg(inst), get_loongarch_reg(cond1), get_loongarch_reg(cond2));
+                                cur_bb_->create_fles(new Reg(reg_fcc0,false,true), get_loongarch_reg(cond1), get_loongarch_reg(cond2));
                             }
                         }
                         break;
 
                     case CmpOp::LT: {
                             if(const_cond1 && const_cond2) {
-                                cur_bb_->create_flts(get_loongarch_reg(inst), new Const(const_cond1->get_value()), new Const(const_cond2->get_value()));
+                                cur_bb_->create_flts(new Reg(reg_fcc0,false,true), new Const(const_cond1->get_value()), new Const(const_cond2->get_value()));
                             } else if(const_cond1) {
-                                cur_bb_->create_flts(get_loongarch_reg(inst), new Const(const_cond1->get_value()), get_loongarch_reg(cond2));
+                                cur_bb_->create_flts(new Reg(reg_fcc0,false,true), new Const(const_cond1->get_value()), get_loongarch_reg(cond2));
                             } else if(const_cond2) {
-                                cur_bb_->create_flts(get_loongarch_reg(inst), get_loongarch_reg(cond1), new Const(const_cond2->get_value()));
+                                cur_bb_->create_flts(new Reg(reg_fcc0,false,true), get_loongarch_reg(cond1), new Const(const_cond2->get_value()));
                             } else {
-                                cur_bb_->create_flts(get_loongarch_reg(inst), get_loongarch_reg(cond1), get_loongarch_reg(cond2));
+                                cur_bb_->create_flts(new Reg(reg_fcc0,false,true), get_loongarch_reg(cond1), get_loongarch_reg(cond2));
                             }
                         }
                         break;
 
                     case CmpOp::NE: {
                             if(const_cond1 && const_cond2) {
-                                cur_bb_->create_fnes(get_loongarch_reg(inst), new Const(const_cond1->get_value()), new Const(const_cond2->get_value()));
+                                cur_bb_->create_fnes(new Reg(reg_fcc0,false,true), new Const(const_cond1->get_value()), new Const(const_cond2->get_value()));
                             } else if(const_cond1) {
-                                cur_bb_->create_fnes(get_loongarch_reg(inst), new Const(const_cond1->get_value()), get_loongarch_reg(cond2));
+                                cur_bb_->create_fnes(new Reg(reg_fcc0,false,true), new Const(const_cond1->get_value()), get_loongarch_reg(cond2));
                             } else if(const_cond2) {
-                                cur_bb_->create_fnes(get_loongarch_reg(inst), get_loongarch_reg(cond1), new Const(const_cond2->get_value()));
+                                cur_bb_->create_fnes(new Reg(reg_fcc0,false,true), get_loongarch_reg(cond1), new Const(const_cond2->get_value()));
                             } else {
-                                cur_bb_->create_fnes(get_loongarch_reg(inst), get_loongarch_reg(cond1), get_loongarch_reg(cond2));
+                                cur_bb_->create_fnes(new Reg(reg_fcc0,false,true), get_loongarch_reg(cond1), get_loongarch_reg(cond2));
                             }
                         }
                         break;
