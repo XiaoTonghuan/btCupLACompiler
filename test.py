@@ -3,10 +3,11 @@ import os
 import csv
 
 # 定义要执行的可执行文件及其参数, 测试路径
-paths = ['./tests/sytest/func'] 
-# paths = ['./']
+# paths = ['./tests/sytest/func'] 
+paths = ['./']
 # executable_file = "./build/parser"
-executable_file = "./build/cminusfc"
+# executable_file = "./build/cminusfc"
+executable_file = "./build/lexer"
 target_end = '.sy'
 output_file_csv = './output.csv'
 
@@ -71,7 +72,8 @@ if __name__ == '__main__':
         files = os.listdir(folder)
         for file in files:
             if file.endswith(target_end):
-                ans_example = test_one(['/'.join([folder,file])],['-mem2reg','-S'],0b1101)
+                # ans_example = test_one(['/'.join([folder,file])],['-mem2reg','-S'],0b1101)
+                ans_example = test_one(['/'.join([folder,file])])
                 for key, val in ans_example.items():
                     folder_output[key].append(val)
 

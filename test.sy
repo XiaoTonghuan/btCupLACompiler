@@ -1,0 +1,4 @@
+float a = 1.23;
+int main(){
+    return 0;
+}
