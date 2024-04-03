@@ -322,14 +322,14 @@ std::string fcvtsw(Reg *dst, Reg *src) {
     std::string loongarch_code;
     Reg* tmp_s1 = new Reg(reg_fs1, true);
     loongarch_code += H2L::space + "movgr2fr.w" + H2L::space + tmp_s1->get_loongarch_code() + ", " + src->get_loongarch_code() + H2L::newline;
-    loongarch_code += H2L::space + "ftintrz.w.s" + H2L::space + dst->get_loongarch_code() + ", " + tmp_s1->get_loongarch_code() + H2L::newline;
+    loongarch_code += H2L::space + "ffint.s.w" + H2L::space + dst->get_loongarch_code() + ", " + tmp_s1->get_loongarch_code() + H2L::newline;
     return loongarch_code;
 }
 //借用fs1
 std::string fcvtws(Reg *dst, Reg *src) {
     std::string loongarch_code;
     Reg* tmp_s1 = new Reg(reg_fs1, true);
-    loongarch_code += H2L::space + "ffint.s.w" + H2L::space + tmp_s1->get_loongarch_code() + ", " + src->get_loongarch_code() + H2L::newline;
+    loongarch_code += H2L::space + "ftintrz.w.s" + H2L::space + tmp_s1->get_loongarch_code() + ", " + src->get_loongarch_code() + H2L::newline;
     loongarch_code += H2L::space + "movfr2gr.s" + H2L::space + dst->get_loongarch_code() + ", " + tmp_s1->get_loongarch_code() + H2L::newline;
     return loongarch_code;
 }

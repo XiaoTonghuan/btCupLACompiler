@@ -87,7 +87,8 @@ return {pos_start=pos_end;pos_end=pos_start+6;pass_node(yytext);return RETURN;}
 \} {pos_start=pos_end;pos_end=pos_start+1;pass_node(yytext);return RBRACE;}
 [a-zA-Z_][a-zA-Z0-9_]* {pos_start=pos_end;pos_end=pos_start+strlen(yytext);pass_node(yytext);return IDENTIFIER;}
 [1-9][0-9]*|0[0-7]*|(0x|0X)[0-9a-fA-F]* {pos_start=pos_end;pos_end=pos_start+strlen(yytext);pass_node(yytext);return INTCONST;}
-([0-9]*\.[0-9]+)e[0-9]+ {pos_start=pos_end;pos_end=pos_start+strlen(yytext);pass_node(yytext);return FLOATCONST;}
+((0(x|X)[0-9A-Fa-f]*\.[0-9A-Fa-f]*((p|P|e|E)(\+|\-)?[0-9A-Fa-f]*)?)|(0(x|X)[0-9A-Fa-f]*[\.]?[0-9A-Fa-f]*(p|P|e|E)((\+|\-)?[0-9A-Fa-f]*)?)|([0-9]*\.[0-9]*((p|P|e|E)(\+|\-)?[0-9]+)?)|([0-9]*[\.]?[0-9]*(p|P|e|E)((\+|\-)?[0-9]+)?)) {pos_start=pos_end;pos_end=pos_start+strlen(yytext);pass_node(yytext);return FLOATCONST;}
+
 
 
 . {pos_start=pos_end;pos_end=pos_start+strlen(yytext);return ERROR;}
