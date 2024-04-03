@@ -43,11 +43,11 @@ syntax_tree_node *node(const char *node_name, int children_num, ...);
 %token <node> ADD SUB MUL DIV LT LTE GT GTE EQ NEQ ASSIN SEMICOLON COMMA
 %token <node> NOT MOD AND OR
 %token <node> LPARENTHESE RPARENTHESE LBRACKET RBRACKET LBRACE RBRACE
-%token <node> IDENTIFIER INTCONST FLOATCONST ERROR
+%token <node> IDENTIFIER INTCONST  FLOATCONST ERROR
 //非终结符
 %type <node> CompUnit Decl ConstDecl BType ConstDef ConstInitVal VarDecl
 %type <node> VarDef InitVal FuncDef  FuncFParams FuncFParam Block 
-%type <node> BlockItem Stmt Exp Cond LVal PrimaryExp Number Integer Float
+%type <node> BlockItem Stmt Exp Cond LVal PrimaryExp Number Integer Float 
 %type <node> UnaryExp UnaryOp FuncRParams 
 %type <node> MulExp AddExp RelExp EqExp LAndExp LOrExp ConstExp 
 %type <node> ConstExpGroup ConstInitValGroup VarDefGroup ArrayDef InitValGroup FuncFParamArray ArrayList BlockGroup ConstDeclGroup
