@@ -2845,13 +2845,13 @@ void sysY_asbuilder::instr_gen(Instruction * inst) {
 
                     case CmpOp::NE: {
                             if(const_cond1 && const_cond2) {
-                                cur_bb_->create_fnes(new Reg(reg_fcc0,false,true), new Const(const_cond1->get_value()), new Const(const_cond2->get_value()));
+                                cur_bb_->create_fnes(get_loongarch_reg(inst), new Const(const_cond1->get_value()), new Const(const_cond2->get_value()));
                             } else if(const_cond1) {
-                                cur_bb_->create_fnes(new Reg(reg_fcc0,false,true), new Const(const_cond1->get_value()), get_loongarch_reg(cond2));
+                                cur_bb_->create_fnes(get_loongarch_reg(inst), new Const(const_cond1->get_value()), get_loongarch_reg(cond2));
                             } else if(const_cond2) {
-                                cur_bb_->create_fnes(new Reg(reg_fcc0,false,true), get_loongarch_reg(cond1), new Const(const_cond2->get_value()));
+                                cur_bb_->create_fnes(get_loongarch_reg(inst), get_loongarch_reg(cond1), new Const(const_cond2->get_value()));
                             } else {
-                                cur_bb_->create_fnes(new Reg(reg_fcc0,false,true), get_loongarch_reg(cond1), get_loongarch_reg(cond2));
+                                cur_bb_->create_fnes(get_loongarch_reg(inst), get_loongarch_reg(cond1), get_loongarch_reg(cond2));
                             }
                         }
                         break;

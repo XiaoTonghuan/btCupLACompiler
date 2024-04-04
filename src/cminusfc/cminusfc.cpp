@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
     PassManager PM(m.get());
 
     if (config.mem2reg) {
-       /* PM.add_pass<DeadStoreEli>();
+        /*PM.add_pass<DeadStoreEli>();
         PM.add_pass<Mem2Reg>();
         PM.add_pass<ConstProp>();
         PM.add_pass<DeadCodeEliWithBr>();
