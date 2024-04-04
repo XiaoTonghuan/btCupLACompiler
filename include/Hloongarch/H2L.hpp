@@ -57,6 +57,7 @@ namespace H2L {
 
     //& cond branches
     std::string bceqz(Reg *rs1, Label *label); 
+    std::string bcnez(Reg *rs1, Label *label); 
     std::string beq(Reg *rs1, Reg *rs2, Label *label);         //& 13位立即数(-2^12, 2^12-1)
     std::string bne(Reg *rs1, Reg *rs2, Label *label);         //& 13位立即数(-2^12, 2^12-1)
     std::string bge(Reg *rs1, Reg *rs2, Label *label);         //& 13位立即数(-2^12, 2^12-1)

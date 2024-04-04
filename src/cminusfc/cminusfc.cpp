@@ -69,8 +69,8 @@ int main(int argc, char **argv) {
         auto syntax_tree = parse(config.input_file.c_str());
         auto ast = AST(syntax_tree);
         CminusfBuilder builder;
-        //ASTPrinter p;
-        //ast.run_visitor(p);
+        // ASTPrinter p;
+        // ast.run_visitor(p);
         ast.run_visitor(builder);
         m = builder.getModule();
     }
@@ -131,7 +131,6 @@ int main(int argc, char **argv) {
     }
     PM.execute();
 
-
     std::ofstream output_stream(config.output_file);
     if (config.emitllvm) {
         auto abs_path = std::filesystem::canonical(config.input_file);
@@ -145,9 +144,9 @@ int main(int argc, char **argv) {
         asbuilder.module_gen();
         auto loongarch_code = asbuilder.get_module()->get_loongarch_code();
         output_stream << loongarch_code;
-        //CodeGen codegen(m.get());
-       // codegen.run();
-        //output_stream << codegen.print();
+        // CodeGen codegen(m.get());
+        // codegen.run();
+        // output_stream << codegen.print();
         //std::cout<<asbuilder.get_module()->print();
     }
 
