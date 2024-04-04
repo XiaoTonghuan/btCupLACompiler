@@ -1543,10 +1543,10 @@ std::string HLFnesInst::get_loongarch_code() {
     } else if(const_cond2) {
         loongarch_code += H2L::li(new Reg(reg_x, false), *(uint32_t*)&(const_cond2->get_fval()));
         loongarch_code += H2L::fmvsx(new Reg(reg_fs1, true), new Reg(reg_x, false));
-        loongarch_code += H2L::feqs(dst_, dynamic_cast<Reg*>(cond1_), new Reg(reg_fs1, true));
+        loongarch_code += H2L::feqs(new Reg(reg_x, false), dynamic_cast<Reg*>(cond1_), new Reg(reg_fs1, true));
         loongarch_code += H2L::seqz(dst_, new Reg(reg_x, false));
     } else {
-        loongarch_code += H2L::feqs(dst_, dynamic_cast<Reg*>(cond1_), dynamic_cast<Reg*>(cond2_));
+        loongarch_code += H2L::feqs(new Reg(reg_x, false), dynamic_cast<Reg*>(cond1_), dynamic_cast<Reg*>(cond2_));
         loongarch_code += H2L::seqz(dst_, new Reg(reg_x, false));
     }
     return loongarch_code;
