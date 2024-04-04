@@ -74,7 +74,7 @@ void sysY_asbuilder::globals_def_gen() {
         } else {
             if(is_array) {
                 global_var_def += H2L::space + ".globl" + H2L::space + name + H2L::newline;
-                global_var_def += H2L::space + ".bss" + H2L::newline;
+                global_var_def += H2L::space +".section"+ H2L::space+ ".bss" + H2L::space+",\"aw\""+ H2L::space+",@nobits"+ H2L::newline;
                 global_var_def += H2L::space + ".align" + H2L::space + std::to_string(var_align) + H2L::newline;
                 global_var_def += H2L::space + ".type" + H2L::space + name + ", @object" + H2L::newline;
                 global_var_def += H2L::space + ".size" + H2L::space + name +", " + std::to_string(size) + H2L::newline;

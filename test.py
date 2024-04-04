@@ -17,7 +17,7 @@ outputasm_file_csv = './outputasm.csv'
 paths_of_asm = ['./test/functionalout','./test/hidden_functionalout']
 cross_compiler_path = './toolchain-loongarch64-linux-gnu-cross/bin/loongarch64-linux-gnu-gcc'
 output_executable_dir = ['./test/functional_exe','./test/hidden_functional_exe']
-
+asmout_output = './outasm.json'
 
 #可执行文件目录
 qemu_path = './qemu-x86_64-to-loongarch64'
@@ -35,12 +35,17 @@ def generate_asm():
     # test and write in folder_output
     for folder in paths:
         files = os.listdir(folder)
+        sorted(files)
         for file in files:
             if file.endswith(target_end):
-                ans_example = generateasm_one(['/'.join([folder,file])],['-mem2reg','-S'],0b1101)
+                prefix,suffix = file.split('.')
+                print(f'{file} start')
+                ans_example = generateasm_one(['/'.join([folder,file])],['-mem2reg','-S', '-o', '/'.join([folder+'out',prefix+'.s']) ],0b1101)
                 # ans_example = test_one(['/'.join([folder,file])])
                 for key, val in ans_example.items():
                     folder_output[key].append(val)
+                print(f'{file} end' )
+    print('generate end')
 
     format_outasm(outputasm_file_csv,folder_output)
 
@@ -53,14 +58,14 @@ def generateasm_one(arguments, other_argument = None, mask = 0b1111):
 
     try:
         # 创建子进程并执行可执行文件
-        process = subprocess.Popen([executable_file] + arguments + other_argument, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        cmd = ' '.join([executable_file] + arguments + other_argument)
+        process = subprocess.run(cmd, shell = True, text = True, timeout = 20)
 
         # 获取标准输出和标准错误
-        stdout, stderr = process.communicate()
         
         # 输出标准输出和标准错误内容
-        res['stderr'] = stderr.decode("utf8")
-        res['stdout'] = stdout.decode('utf8')
+        res['stderr'] = process.stderr
+        res['stdout'] = process.stdout
 
         # 获取返回码, 0表示成功
         return_code = process.returncode
@@ -93,23 +98,41 @@ def generate_executable():
     lenth_of_dir = len(paths_of_asm)
     error_examples = []
 
+    all_asms = []
     for i in range(lenth_of_dir):
         source_dir = paths_of_asm[i]
         output_dir = output_executable_dir[i]
 
         asms = os.listdir(source_dir)
+        one_asms = []
+
         for asm in asms:
+            asm_out = {
+                'name' : asm,
+                'stdout': None,
+                'stderr': None,
+                'retcode': 0,
+                'other': []
+            }
             print(f'{asm} is generating')
             prefix,suffix = asm.split('.')
             if asm.endswith(suffix):
                 cmd = ' '.join([cross_compiler_path,'-static', '/'.join([source_dir,asm]), './src/io/io.c', '-o', '/'.join([output_dir,prefix])])
                 try:
-                    subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell = True)
+                    process = subprocess.run(cmd, shell = True, timeout = 20, text = True, capture_output = True)
+                    asm_out['stderr'] = process.stderr
+                    asm_out['stdout'] = process.stdout
+                    asm_out['retcode'] = process.returncode
                 except Exception as e:
                     error_examples.append(asm)
-    print('fails:')
-    print(error_examples)
-    print('fails end')
+                    asm_out['other'].append(e)
+            one_asms.append(asm_out)
+        all_asms.append(one_asms)
+
+    json_data = json.dumps(all_asms)
+    with open(asmout_output, "w") as json_file:
+        json_file.write(json_data)
+    
     print('Done')
 
 def test_executable():
@@ -130,8 +153,11 @@ def test_executable():
                 output_files.add(file)
             elif file.endswith('.in'):
                 input_files.add(file)
-
+        sorted(exes)
         for executable in exes:
+
+            print(f'{executable} start')
+
             executable_out = {
                 'name': executable,
                 'stdout': None,
@@ -142,7 +168,7 @@ def test_executable():
             }
 
             input_argument = executable + '.in'
-            cmd = ' '.join( [qemu_path,'/'.join([source_dir,executable]) ,'/'.join([input_dir,executable + '.in']) if input_argument in input_files else ''])
+            cmd = ' '.join( [qemu_path,'/'.join([source_dir,executable]) , ' < ' + '/'.join([input_dir,executable + '.in']) if input_argument in input_files else ''])
             try:
                 process = subprocess.run( ' '.join(['chmod +x ' + qemu_path, '&&', cmd]) , shell = True,capture_output = True,text = True)
                 retcode = process.returncode
@@ -153,18 +179,19 @@ def test_executable():
 
                 
                 out_get = process.stdout
-                out_get += str(retcode) + '\n'
 
                 out_expected = ''
                 with open( '/'.join([input_dir,executable + '.out']) ) as file:
                     out_expected = file.read()
                 
-                executable_out['cmpare'] = (out_get == out_expected)
+                executable_out['cmpare'] = (out_get + str(retcode) + '\n' == out_expected or out_get + '\n' + str(retcode) + '\n' == out_expected)
 
             except Exception as e:
                 executable_out['except'].append(e)
             
             dir_out.append(executable_out)
+
+            print(f'{executable} end')
         
         all_dir_out.append(dir_out)
     print(all_dir_out)
@@ -179,7 +206,8 @@ def test_executable():
             
 
 if __name__ == '__main__':
-    # generate_executable();
+    generate_asm()
+    generate_executable();
     test_executable()
 
 
