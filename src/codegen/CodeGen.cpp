@@ -6,7 +6,7 @@
 
 #include "logging.hpp"
 
-#define ENABLE_REGALLOC_DEBUG
+//#define ENABLE_REGALLOC_DEBUG
 
 void sysY_asbuilder::module_gen() {
     std::string loongarch_header;
@@ -102,7 +102,7 @@ void sysY_asbuilder::globals_def_gen() {
 void sysY_asbuilder::function_gen() {
     //& for debug info
     #ifdef ENABLE_REGALLOC_DEBUG
-        std::cout << "************* " << cur_func_->get_function()->get_name() << " ****************" << std::endl;
+        //std::cout << "************* " << cur_func_->get_function()->get_name() << " ****************" << std::endl;
         for(auto &[val,interval]: ival2interval) {
             LOG(INFO) << "value: " << val->get_name() << ", " << "reg: " << Ireg2name[interval->reg_id];
         }

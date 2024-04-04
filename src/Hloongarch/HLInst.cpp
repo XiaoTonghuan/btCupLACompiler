@@ -1227,7 +1227,7 @@ std::string HLFsubsInst::get_loongarch_code() {
     auto const_rs1 = dynamic_cast<Const*>(rs1_);
     auto const_rs2 = dynamic_cast<Const*>(rs2_);
     if(const_rs1 && const_rs2) {
-        auto result = const_rs1->get_fval() + const_rs2->get_fval();
+        auto result = const_rs1->get_fval() - const_rs2->get_fval();
         loongarch_code += H2L::li(new Reg(reg_x, false), *(uint32_t*)(&result));
         loongarch_code += H2L::fmvsx(dst_, new Reg(reg_x, false));
     } else if(const_rs1) {

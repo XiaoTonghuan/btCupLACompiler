@@ -347,11 +347,11 @@ ASTNode* AST::transform_node_iter(syntax_tree_node *n) {
         auto node = new ASTNumber();
         if(_STR_EQ(n->children[0]->name, "Integer")){
             node->type = TYPE_INT;
-            node->i_val = std::stoi(n->children[0]->children[0]->name);
+            node->i_val = std::stoi(n->children[0]->children[0]->name,0,0);
         }else if(_STR_EQ(n->children[0]->name, "Float")){
             node->type = TYPE_FLOAT;
-            node->f_val = std::stof(n->children[0]->children[0]->name);
-        } 
+            node->f_val = std::stof(n->children[0]->children[0]->name,0);
+        }
         return node;
     }else if(_STR_EQ(n->name, "FuncDef")){
         auto node = new ASTFuncDef();
