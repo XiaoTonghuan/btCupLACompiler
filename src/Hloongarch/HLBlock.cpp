@@ -394,13 +394,14 @@ HLRetInst *HLBlock::create_ret() {
 
 std::string HLBlock::get_loongarch_code() {
     std::string loongarch_code;
+    //std::cout<<"HLblock start"<<this->print()<<std::endl;
     if(label_->get_label_name() != "") {
         loongarch_code += label_->get_label_name() + ":" + H2L::newline;
     } 
     for(auto inst: insts_list_) {
         loongarch_code += inst->get_loongarch_code();
     }
-
+    //std::cout<<"HLblock end"<<std::endl;
     return loongarch_code;
 }
 
