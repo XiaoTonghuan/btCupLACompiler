@@ -9,16 +9,18 @@ HLFunction *HLInst::get_hloongarch_func() { return parent_->get_parent(); }
 
 std::string CalleeSaveRegsInst::get_loongarch_code() {
     std::string loongarch_code;
-
     for(auto save_reg_pair: callee_save_regs_) {
         auto regloc = save_reg_pair.first;
         auto regbase = save_reg_pair.second;
         if(regloc->is_float())
+        {
             loongarch_code += H2L::fsw(new Reg(regloc->get_reg_id(), true), new Reg(regbase->get_reg_id(), false), regbase->get_offset());
+        }
+            
         else
             loongarch_code += H2L::sd(new Reg(regloc->get_reg_id(), false), new Reg(regbase->get_reg_id(), false), regbase->get_offset());
     }
-
+        //std::cout<<"Caller_save_reg end"<<std::endl;
     return loongarch_code;
 }
 
@@ -60,6 +62,11 @@ std::string CalleeArgsMoveInst::get_loongarch_code() {
     for(auto iarg_pair: to_move_iargs_) {
         auto target_loc = iarg_pair.first;
         auto src_loc = iarg_pair.second;
+        if(target_loc==nullptr||src_loc==nullptr){
+            std::cout<<"67 nullptr"<<std::endl;
+        }
+        //std::cout<<"target_loc->print(): "<<target_loc->print()<<std::endl;
+        //std::cout<<"src_loc->print(): "<<src_loc->print()<<std::endl;
         if(dynamic_cast<RegLoc*>(target_loc) && dynamic_cast<RegLoc*>(src_loc)) {
             loongarch_code += H2L::mv(new Reg(dynamic_cast<RegLoc*>(target_loc)->get_reg_id(), false), new Reg(dynamic_cast<RegLoc*>(src_loc)->get_reg_id(), false));
         } else if(dynamic_cast<RegBase*>(target_loc) && dynamic_cast<RegLoc*>(src_loc)) {
@@ -88,6 +95,11 @@ std::string CalleeArgsMoveInst::get_loongarch_code() {
     for(auto farg_pair: to_move_fargs_) {
         auto target_loc = farg_pair.first;
         auto src_loc = farg_pair.second;
+        if(target_loc==nullptr||src_loc==nullptr){
+            std::cout<<"95 nullptr"<<std::endl;
+        }
+        //std::cout<<"target_loc->print(): "<<target_loc->print()<<std::endl;
+        //std::cout<<"src_loc->print(): "<<src_loc->print()<<std::endl;
         if(dynamic_cast<RegLoc*>(target_loc) && dynamic_cast<RegLoc*>(src_loc)) {
             loongarch_code += H2L::fmvs(new Reg(dynamic_cast<RegLoc*>(target_loc)->get_reg_id(), true), new Reg(dynamic_cast<RegLoc*>(src_loc)->get_reg_id(), true));
         } else if(dynamic_cast<RegBase*>(target_loc) && dynamic_cast<RegLoc*>(src_loc)) {
@@ -209,7 +221,7 @@ std::string CalleeEndStackFrameInst::print() {
 
 std::string CallerSaveRegsInst::get_loongarch_code() {
     std::string loongarch_code;
-
+    //std::cout<<"Caller_save_reg start"<<this->print()<<std::endl;
     for(auto save_reg_pair: to_store_regs_) {
         auto regloc = save_reg_pair.first;
         auto regbase = save_reg_pair.second;
@@ -218,7 +230,7 @@ std::string CallerSaveRegsInst::get_loongarch_code() {
         else
             loongarch_code += H2L::sd(new Reg(regloc->get_reg_id(), false), new Reg(regbase->get_reg_id(), false), regbase->get_offset());
     }
-
+    //std::cout<<"Caller_save_reg end"<<std::endl;
     return loongarch_code;
 }
 
@@ -246,6 +258,7 @@ std::string CallerSaveRegsInst::print() {
 
 std::string CallerArgsMoveInst::get_loongarch_code() {
     std::string loongarch_code;
+    //std::cout<<"Caller_args_move start"<<this->print()<<std::endl;
     for(auto move_farg_pair: to_move_fargs_) {
         auto target = move_farg_pair.first;
         auto src = move_farg_pair.second;
@@ -260,7 +273,7 @@ std::string CallerArgsMoveInst::get_loongarch_code() {
                 loongarch_code += H2L::fmvsx(new Reg(reg_target->get_reg_id(), true), new Reg(reg_x, false));
             } else if(dynamic_cast<RegBase*>(target)) {
                 loongarch_code += H2L::li(new Reg(reg_x, false), *(uint32_t*)&(const_src->get_fval()));
-                loongarch_code += H2L::fmvsx(new Reg(reg_target->get_reg_id(), true), new Reg(reg_x, false));
+                loongarch_code += H2L::fmvsx(new Reg(reg_fs1, true), new Reg(reg_x, false));
                 if(regbase_target->get_offset() > 2047 || regbase_target->get_offset() < -2048) {
                     loongarch_code += H2L::addi(new Reg(reg_ra, false), new Reg(regbase_target->get_reg_id(), false), regbase_target->get_offset());
                     loongarch_code += H2L::fsw(new Reg(reg_fs1, true), new Reg(reg_ra, false), 0);
@@ -281,7 +294,7 @@ std::string CallerArgsMoveInst::get_loongarch_code() {
                     loongarch_code += H2L::fsw(new Reg(reg_src->get_reg_id(), true), new Reg(regbase_target->get_reg_id(), false), regbase_target->get_offset());
                 }
             } 
-        } else {
+        } else if(regbase_src){
             if(regbase_src->get_offset() > 2047 || regbase_src->get_offset() < -2048) {
                 loongarch_code += H2L::addi(new Reg(reg_ra, false), new Reg(regbase_src->get_reg_id(), false), regbase_src->get_offset()); 
                 loongarch_code += H2L::flw(new Reg(reg_fs1, true), new Reg(reg_ra, false), 0);
@@ -300,7 +313,10 @@ std::string CallerArgsMoveInst::get_loongarch_code() {
                     loongarch_code += H2L::fsw(new Reg(reg_fs1, true), new Reg(regbase_target->get_reg_id(), false), regbase_target->get_offset());
                 }
             } 
+        }else {
+            std::cout<<"all nullptr"<<std::endl;
         }
+        //std::cout<<"Caller_args_move end"<<std::endl;
     }
 
     for(auto move_iarg_pair: to_move_iargs_) {
@@ -2692,7 +2708,7 @@ std::string HLFBneInst::get_loongarch_code() {
         } else {
             loongarch_code += H2L::feqs(new Reg(reg_fcc0, false,true), new Reg(reg_fs1, true), dynamic_cast<Reg*>(rval_));
         }
-        loongarch_code += H2L::bcnez(new Reg(reg_fcc0, false,true), label_);
+        loongarch_code += H2L::bceqz(new Reg(reg_fcc0, false,true), label_);
     } else if(const_rval) {
         loongarch_code += H2L::li(new Reg(reg_x, false), *(uint32_t*)&(const_rval->get_fval()));
         loongarch_code += H2L::fmvsx(new Reg(reg_fs1, true), new Reg(reg_x, false));
@@ -2709,7 +2725,7 @@ std::string HLFBneInst::get_loongarch_code() {
         } else {
             loongarch_code += H2L::feqs(new Reg(reg_fcc0, false,true), dynamic_cast<Reg*>(lval_), new Reg(reg_fs1, true));
         }
-        loongarch_code += H2L::bcnez(new Reg(reg_fcc0, false,true), label_);
+        loongarch_code += H2L::bceqz(new Reg(reg_fcc0, false,true), label_);
     } else {
         auto mem_lval = dynamic_cast<Mem*>(lval_);
         auto mem_rval = dynamic_cast<Mem*>(rval_);
@@ -2750,7 +2766,7 @@ std::string HLFBneInst::get_loongarch_code() {
         } else {
             loongarch_code += H2L::feqs(new Reg(reg_fcc0, false,true), dynamic_cast<Reg*>(lval_), dynamic_cast<Reg*>(rval_));
         }
-        loongarch_code += H2L::bcnez(new Reg(reg_fcc0, false,true), label_);
+        loongarch_code += H2L::bceqz(new Reg(reg_fcc0, false,true), label_);
     }
 
     return loongarch_code;

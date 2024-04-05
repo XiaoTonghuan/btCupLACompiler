@@ -11,7 +11,7 @@ HLFunction *HLModule::create_func(Function *func) {
 
 std::string HLModule::get_loongarch_code() {
     std::string loongarch_code;
-
+    //std::cout<<"HLModule start"<<this->print()<<std::endl;
     loongarch_code += hloongarch_header_;
     if(!hloongarch_data_section_def_.empty()) {
         loongarch_code += H2L::space + ".text" + H2L::newline;
@@ -25,6 +25,7 @@ std::string HLModule::get_loongarch_code() {
             loongarch_code += func->get_loongarch_code();
         }
     }
+    //std::cout<<"HLModule end"<<std::endl;
     return loongarch_code;
 }
 

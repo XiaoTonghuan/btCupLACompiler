@@ -69,16 +69,14 @@ int main(int argc, char **argv) {
         auto syntax_tree = parse(config.input_file.c_str());
         auto ast = AST(syntax_tree);
         CminusfBuilder builder;
-        // ASTPrinter p;
-        // ast.run_visitor(p);
+        //ASTPrinter p;
+        //ast.run_visitor(p);
         ast.run_visitor(builder);
         m = builder.getModule();
     }
-
     m->set_print_name();
     m->set_file_name(config.input_file.c_str());
     PassManager PM(m.get());
-
     if (config.mem2reg) {
         /*PM.add_pass<DeadStoreEli>();
         PM.add_pass<Mem2Reg>();
@@ -130,7 +128,6 @@ int main(int argc, char **argv) {
         PM.add_pass<ActiveVar>();
     }
     PM.execute();
-
     std::ofstream output_stream(config.output_file);
     if (config.emitllvm) {
         auto abs_path = std::filesystem::canonical(config.input_file);
@@ -142,6 +139,7 @@ int main(int argc, char **argv) {
         mptr->set_print_name();
         sysY_asbuilder asbuilder(mptr);
         asbuilder.module_gen();
+        //std::cout<<asbuilder.get_module()->print();
         auto loongarch_code = asbuilder.get_module()->get_loongarch_code();
         output_stream << loongarch_code;
         // CodeGen codegen(m.get());

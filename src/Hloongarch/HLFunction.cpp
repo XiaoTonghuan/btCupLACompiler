@@ -12,12 +12,14 @@ HLBlock *HLFunction::create_bb(BasicBlock *bb, Label *label) {
 
 std::string HLFunction::get_loongarch_code() {
     std::string loongarch_code;
+    //std::cout<<"HLFunction start"<<this->print()<<std::endl;
     loongarch_code += func_header_;
     loongarch_code += f_->get_name() + ":" + H2L::newline;
     for(auto bb: blocks_list_) {
         loongarch_code += bb->get_loongarch_code();
     }
     loongarch_code += H2L::space + ".size" + H2L::space + f_->get_name() + ", " + ".-" + f_->get_name() + H2L::newline;
+    //std::cout<<"HLFunction end"<<std::endl;
     return loongarch_code;
 }
 
