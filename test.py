@@ -73,6 +73,8 @@ def generateasm_one(arguments, other_argument = None, mask = 0b1111):
 
     except FileNotFoundError:
         res['others'].append('找不到可执行文件')
+    except TimeoutError:
+        res['others'].append('运行时间超时')
     except Exception as e:
         res['others'].append('其他异常')
     
