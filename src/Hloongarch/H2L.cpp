@@ -247,6 +247,11 @@ std::string bceqz(Reg *rs1, Label *label) {
     loongarch_code += H2L::space + "bceqz" + H2L::space + rs1->get_loongarch_code() + ", "  + label->get_loongarch_code() + H2L::newline;
     return loongarch_code;
 }
+std::string bcnez(Reg *rs1, Label *label) {
+    std::string loongarch_code;
+    loongarch_code += H2L::space + "bcnez" + H2L::space + rs1->get_loongarch_code() + ", "  + label->get_loongarch_code() + H2L::newline;
+    return loongarch_code;
+}
 
 
 //& mem ops
