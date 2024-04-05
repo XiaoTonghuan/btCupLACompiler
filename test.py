@@ -59,9 +59,7 @@ def generateasm_one(arguments, other_argument = None, mask = 0b1111):
     try:
         # 创建子进程并执行可执行文件
         cmd = ' '.join([executable_file] + arguments + other_argument)
-        process = subprocess.run(cmd, shell = True, text = True, timeout = 20)
-
-        # 获取标准输出和标准错误
+        process = subprocess.run(cmd, shell = True, timeout = 60)
         
         # 输出标准输出和标准错误内容
         res['stderr'] = process.stderr
@@ -76,7 +74,7 @@ def generateasm_one(arguments, other_argument = None, mask = 0b1111):
     except TimeoutError:
         res['others'].append('运行时间超时')
     except Exception as e:
-        res['others'].append('其他异常')
+        res['others'].append(e)
     
 
     keylst = ['stderr','stdout','retcode','others']
@@ -209,8 +207,8 @@ def test_executable():
 
 if __name__ == '__main__':
     generate_asm()
-    generate_executable();
-    test_executable()
+    # generate_executable();
+    # test_executable()
 
 
                 
