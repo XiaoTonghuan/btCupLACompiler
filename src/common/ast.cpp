@@ -63,6 +63,15 @@ ASTNode* AST::transform_node_iter(syntax_tree_node *n) {
         
         auto node = new ASTConstDeclaration();
         std::stack<syntax_tree_node *> constdecllist;
+        if(_STR_EQ(n->children[1]->children[0]->name, "int"))
+                node->type = TYPE_INT;
+            else if(_STR_EQ(n->children[1]->children[0]->name, "float"))
+                node->type = TYPE_FLOAT;
+            else{
+                std::cerr << "[ast]: CompUnit transform failure!"<<std::endl<<n->children[1]->name
+                          << std::endl;
+                std::abort();
+            }
 
         if(n->children_num==5){
             auto list_p = n->children[3];
