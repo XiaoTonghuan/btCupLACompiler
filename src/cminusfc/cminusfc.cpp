@@ -79,50 +79,51 @@ int main(int argc, char **argv) {
     m->set_file_name(config.input_file.c_str());
     PassManager PM(m.get());
     if (config.mem2reg) {
-        PM.add_pass<DeadStoreEli>();
-        PM.add_pass<Mem2Reg>();
-        PM.add_pass<ConstProp>();
-        PM.add_pass<DeadCodeEliWithBr>();
-        PM.add_pass<RecSeq>();
-        PM.add_pass<FuncInline>();
-        PM.add_pass<DeadCodeEliWithBr>();
-        PM.add_pass<AgressiveLocalComSubExprEli>();
-        PM.add_pass<LocalComSubExprEli>();
-        PM.add_pass<AlgeSimplify>();
-        PM.add_pass<LoopInvariant>();
-        PM.add_pass<DeadCodeEliWithBr>();
-        PM.add_pass<LoopInvariant>();
-        PM.add_pass<DeadCodeEliWithBr>();
-        PM.add_pass<LoopExpansion>();
-        PM.add_pass<VarLoopExpansion>();
-        PM.add_pass<DeadCodeEliWithBr>();
-        // PM.add_pass<Check>();
+        // PM.add_pass<DeadStoreEli>();
+        // PM.add_pass<Mem2Reg>();
+        // PM.add_pass<ConstProp>();
+        // PM.add_pass<DeadCodeEliWithBr>();
+        // PM.add_pass<RecSeq>();
+        // PM.add_pass<FuncInline>();
+        // PM.add_pass<DeadCodeEliWithBr>();
+        // PM.add_pass<AgressiveLocalComSubExprEli>();
+        // PM.add_pass<LocalComSubExprEli>();
+        // PM.add_pass<AlgeSimplify>();
+        // PM.add_pass<LoopInvariant>();
+        // PM.add_pass<DeadCodeEliWithBr>();
+        // PM.add_pass<LoopInvariant>();
+        // PM.add_pass<DeadCodeEliWithBr>();
+        // PM.add_pass<LoopExpansion>();
+        // PM.add_pass<VarLoopExpansion>();
+        // PM.add_pass<DeadCodeEliWithBr>();
+        // // PM.add_pass<Check>();
 
-        //& 第二轮
-        PM.add_pass<ConstProp>();
-        PM.add_pass<AlgeSimplify>();
-        PM.add_pass<DeadCodeEliWithBr>();
-        PM.add_pass<LoopInvariant>();
-        PM.add_pass<DeadCodeEliWithBr>();
-        PM.add_pass<TailRecursionElim>();
-        // std::cout << 1;
-        //& 第三轮
-        PM.add_pass<LIR>();
-        // PM.add_pass<LoopStrengthReduction>();
-        PM.add_pass<LocalComSubExprEli>();
-        PM.add_pass<ConstProp>();
-        PM.add_pass<DeadStoreEli>();
-        PM.add_pass<DeadCodeEliWithBr>();
-        PM.add_pass<StrengthReduction>();
-        PM.add_pass<LocalComSubExprEli>();
-        PM.add_pass<DeadCodeEliWithBr>();
-        PM.add_pass<RedundantInstsEli>();
-        PM.add_pass<AgressiveConstProp>();
-        // PM.add_pass<InstructionScheduling>();
-        PM.add_pass<ActiveVar>();
-        PM.add_pass<CFGAnalyse>();
+        // //& 第二轮
+        // PM.add_pass<ConstProp>();
+        // PM.add_pass<AlgeSimplify>();
+        // PM.add_pass<DeadCodeEliWithBr>();
+        // PM.add_pass<LoopInvariant>();
+        // PM.add_pass<DeadCodeEliWithBr>();
+        // PM.add_pass<TailRecursionElim>();
+
+        // //& 第三轮
+        // PM.add_pass<LIR>();
+        // // PM.add_pass<LoopStrengthReduction>();
+        // PM.add_pass<LocalComSubExprEli>();
+        // PM.add_pass<ConstProp>();
+        // PM.add_pass<DeadStoreEli>();
+        // PM.add_pass<DeadCodeEliWithBr>();
+        // PM.add_pass<StrengthReduction>();
+        // PM.add_pass<LocalComSubExprEli>();
+        // PM.add_pass<DeadCodeEliWithBr>();
+        // PM.add_pass<RedundantInstsEli>();
+        // PM.add_pass<AgressiveConstProp>();
+        // // PM.add_pass<InstructionScheduling>();
+        // PM.add_pass<ActiveVar>();
+        // PM.add_pass<CFGAnalyse>();
         
         PM.add_pass<Mem2Reg>();
+        PM.add_pass<FuncInline>();
         PM.add_pass<LIR>();
         PM.add_pass<LocalComSubExprEli>();
         PM.add_pass<CFGAnalyse>();
