@@ -122,7 +122,10 @@ int main(int argc, char **argv) {
         // PM.add_pass<ActiveVar>();
         // PM.add_pass<CFGAnalyse>();
         
+        PM.add_pass<DeadStoreEli>();
         PM.add_pass<Mem2Reg>();
+        PM.add_pass<ConstProp>();
+        PM.add_pass<DeadCodeEliWithBr>();
         PM.add_pass<FuncInline>();
         PM.add_pass<LIR>();
         PM.add_pass<LocalComSubExprEli>();
