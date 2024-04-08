@@ -260,11 +260,11 @@ public:
                         else if (n > divisor)
                         {
                             add_term(term.first->value, n / divisor, true);
-                            std::cout<<"++++++++++++++++++++= n > divisor++++++++++++++++++++++++++"<<std::endl;
-                            std::cout << term.first->value->print() <<std::endl;
-                            std::cout <<n<<std::endl;
-                            std::cout <<divisor<<std::endl;
-                            std::cout <<n / divisor<<std::endl;
+                            // std::cout<<"++++++++++++++++++++= n > divisor++++++++++++++++++++++++++"<<std::endl;
+                            // std::cout << term.first->value->print() <<std::endl;
+                            // std::cout <<n<<std::endl;
+                            // std::cout <<divisor<<std::endl;
+                            // std::cout <<n / divisor<<std::endl;
                         }
                     }
                     else if(divisor % n == 0)
@@ -273,7 +273,7 @@ public:
                     }
                     else
                     {//此处为错误情况
-                        std::cout<<"Error"<<std::endl;
+                        // std::cout<<"Error"<<std::endl;
                         
                         // IRBuilder builder(parent, module_);
                         // auto div = builder.create_isdiv(term.first->value, ConstantInt::get(divisor, module_));

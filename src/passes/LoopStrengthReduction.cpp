@@ -23,8 +23,8 @@ void LoopStrengthReduction::strength_reduction()
     for(auto loop : *loopSet)
     {
         loop->find_dependent_iduction_var();
-        std::cout<<loop->get_ind_vars().size()<<std::endl;
-        loop->debug_print_basic_iv();
+        // std::cout<<loop->get_ind_vars().size()<<std::endl;
+        // loop->debug_print_basic_iv();
         for(auto iv : loop->get_ind_vars())
         {
             if(iv->is_dependent_iv())

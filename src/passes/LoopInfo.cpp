@@ -13,7 +13,7 @@ void LoopInfo::execute()
         newLoop->find_preheader_and_end();
         newLoop->find_break();
         allLoops.push_back(newLoop);
-        loopSearch.printSCC(loop);
+        // loopSearch.printSCC(loop);
         newLoop->find_basic_iduction_var();
         // newLoop->find_dependent_iduction_var();
     }
@@ -25,8 +25,8 @@ void LoopInfo::execute()
         // auto terminal = loop->get_terminal_of_base();
         // std::cout << terminal->print() << std::endl;
         // std::cout << (terminal->is_cmp() || terminal->is_cmpbr() || terminal->is_br()) << std::endl;
-        std::cout<<loop->get_ind_vars().size()<<std::endl;
-        loop->debug_print_basic_iv();
+        // std::cout<<loop->get_ind_vars().size()<<std::endl;
+        // loop->debug_print_basic_iv();
     }
 
     // for(auto func:m_->get_functions())
@@ -403,7 +403,7 @@ void Loop::find_break()
             if(is_break(inst))
             {
                 hasBreak = true;
-                std::cout<<"有break"<<std::endl;
+                // std::cout<<"有break"<<std::endl;
                 return;
             }
         }

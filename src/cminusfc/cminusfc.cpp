@@ -30,6 +30,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <memory>
 #include <string>
 
@@ -78,7 +79,7 @@ int main(int argc, char **argv) {
     m->set_file_name(config.input_file.c_str());
     PassManager PM(m.get());
     if (config.mem2reg) {
-        /*PM.add_pass<DeadStoreEli>();
+        PM.add_pass<DeadStoreEli>();
         PM.add_pass<Mem2Reg>();
         PM.add_pass<ConstProp>();
         PM.add_pass<DeadCodeEliWithBr>();
@@ -104,7 +105,7 @@ int main(int argc, char **argv) {
         PM.add_pass<LoopInvariant>();
         PM.add_pass<DeadCodeEliWithBr>();
         PM.add_pass<TailRecursionElim>();
-
+        // std::cout << 1;
         //& 第三轮
         PM.add_pass<LIR>();
         // PM.add_pass<LoopStrengthReduction>();
@@ -119,7 +120,7 @@ int main(int argc, char **argv) {
         PM.add_pass<AgressiveConstProp>();
         // PM.add_pass<InstructionScheduling>();
         PM.add_pass<ActiveVar>();
-        PM.add_pass<CFGAnalyse>();*/
+        PM.add_pass<CFGAnalyse>();
         
         PM.add_pass<Mem2Reg>();
         PM.add_pass<LIR>();
@@ -127,7 +128,7 @@ int main(int argc, char **argv) {
         PM.add_pass<CFGAnalyse>();
         PM.add_pass<ActiveVar>();
     }
-    PM.execute();
+    PM.execute(0);
     std::ofstream output_stream(config.output_file);
     if (config.emitllvm) {
         auto abs_path = std::filesystem::canonical(config.input_file);

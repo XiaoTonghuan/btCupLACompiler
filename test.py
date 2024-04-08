@@ -207,8 +207,8 @@ def test_executable():
 
 if __name__ == '__main__':
     generate_asm()
-    # generate_executable();
-    # test_executable()
+    generate_executable();
+    test_executable()
 
 
                 

@@ -3,7 +3,7 @@
 void VarLoopExpansion::execute(){
     CFG_analyser = std::make_unique<CFGAnalyse>(module_);
     CFG_analyser->execute();
-    std::cout << module_->print() << std::endl;
+    // std::cout << module_->print() << std::endl;
     find_try();
 }
 
