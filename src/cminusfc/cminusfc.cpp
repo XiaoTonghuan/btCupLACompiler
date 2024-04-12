@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
         // PM.add_pass<RecSeq>();
         // PM.add_pass<FuncInline>();
         // PM.add_pass<DeadCodeEliWithBr>();
-        // PM.add_pass<AgressiveLocalComSubExprEli>();
+        // 
         // PM.add_pass<LocalComSubExprEli>();
         // PM.add_pass<AlgeSimplify>();
         // PM.add_pass<LoopInvariant>();
@@ -126,6 +126,7 @@ int main(int argc, char **argv) {
         PM.add_pass<Mem2Reg>();
         PM.add_pass<ConstProp>();
         PM.add_pass<DeadCodeEliWithBr>();
+        PM.add_pass<AgressiveLocalComSubExprEli>();
         PM.add_pass<FuncInline>();
         PM.add_pass<LIR>();
         PM.add_pass<LocalComSubExprEli>();

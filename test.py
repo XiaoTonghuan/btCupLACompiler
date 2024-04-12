@@ -5,7 +5,8 @@ import json
 
 # 定义要执行的可执行文件及其参数, 测试路径
 # paths = ['./tests/sytest/func'] 
-paths = ['./test/functional','./test/hidden_functional']
+# paths = ['./test/functional','./test/hidden_functional']
+paths = ['./test/performance']
 # executable_file = "./build/parser"
 executable_file = "./build/cminusfc"
 # executable_file = "./build/lexer"
@@ -14,9 +15,11 @@ outputasm_file_csv = './outputasm.csv'
 
 
 #汇编文件目录
-paths_of_asm = ['./test/functionalout','./test/hidden_functionalout']
+# paths_of_asm = ['./test/functionalout','./test/hidden_functionalout']
+paths_of_asm = ['./test/performanceout']
 cross_compiler_path = './toolchain-loongarch64-linux-gnu-cross/bin/loongarch64-linux-gnu-gcc'
-output_executable_dir = ['./test/functional_exe','./test/hidden_functional_exe']
+# output_executable_dir = ['./test/functional_exe','./test/hidden_functional_exe']
+output_executable_dir = ['./test/performance_exe']
 asmout_output = './outasm.json'
 
 #可执行文件目录
@@ -160,8 +163,8 @@ def test_executable():
 
             executable_out = {
                 'name': executable,
-                'stdout': None,
-                'stderr': None,
+                'stdout': '',
+                'stderr': '',
                 'retcode': 0,
                 'except': [],
                 'cmpare': None
@@ -170,11 +173,11 @@ def test_executable():
             input_argument = executable + '.in'
             cmd = ' '.join( [qemu_path,'/'.join([source_dir,executable]) , ' < ' + '/'.join([input_dir,executable + '.in']) if input_argument in input_files else ''])
             try:
-                process = subprocess.run( ' '.join(['chmod +x ' + qemu_path, '&&', cmd]) , shell = True,capture_output = True,text = True)
+                process = subprocess.run( ' '.join(['chmod +x ' + qemu_path, '&&', cmd]) , shell = True,capture_output = True,text = True,timeout = 20)
                 retcode = process.returncode
 
                 executable_out['stderr'] = process.stderr
-                executable_out['stdout'] = process.stdout
+                # executable_out['stdout'] = process.stdout
                 executable_out['retcode'] = retcode
 
                 
@@ -187,7 +190,7 @@ def test_executable():
                 executable_out['cmpare'] = (out_get + str(retcode) + '\n' == out_expected or out_get + '\n' + str(retcode) + '\n' == out_expected)
 
             except Exception as e:
-                executable_out['except'].append(e)
+                executable_out['except'].append('error')
             
             dir_out.append(executable_out)
 
